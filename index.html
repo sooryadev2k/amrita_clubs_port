@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amrita Student Clubs Portal | Discover Your Passion</title>
+    <meta name="description" content="Explore 100+ student-led clubs at Amrita. Connect, create, and lead. Find your community and discover new interests.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#home" class="nav-brand" id="nav-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">AMRITA</span>
+                    <span class="brand-tagline">Student Clubs Portal</span>
+                </div>
+            </a>
+            <div class="nav-links" id="nav-links">
+                <a href="#home" class="nav-link active" data-nav="home"><i class="fas fa-home"></i> Home</a>
+                <a href="#clubs" class="nav-link" data-nav="clubs"><i class="fas fa-users"></i> All Clubs</a>
+                <a href="#admin" class="nav-link" data-nav="admin"><i class="fas fa-shield-alt"></i> Admin</a>
+                <a href="#contact" class="nav-link" data-nav="contact"><i class="fas fa-envelope"></i> Contact</a>
+            </div>
+            <div class="nav-actions">
+                <button class="nav-login-btn" id="nav-login-btn" onclick="openLoginModal()">
+                    <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+                </button>
+                <button class="nav-logout-btn hidden" id="nav-logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </button>
+                <button class="nav-toggle" id="nav-toggle" onclick="toggleMobileNav()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== LOGIN MODAL ===== -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal login-modal-content">
+            <button class="modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+            <div class="login-header">
+                <div class="login-icon"><i class="fas fa-user-shield"></i></div>
+                <h2>Admin Login</h2>
+                <p>Enter your admin credentials to access the dashboard</p>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock"></i> Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="login-password" placeholder="Enter admin password" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="login-error hidden" id="login-error">
+                    <i class="fas fa-exclamation-circle"></i> Invalid password. Please try again.
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== ADD/EDIT CLUB MODAL ===== -->
+    <div class="modal-overlay" id="club-modal">
+        <div class="modal club-modal-content">
+            <button class="modal-close" onclick="closeClubModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h2 id="club-modal-title"><i class="fas fa-plus-circle"></i> Add New Club</h2>
+            </div>
+            <form id="club-form" onsubmit="handleClubSubmit(event)" class="club-form">
+                <input type="hidden" id="club-edit-id">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="club-name"><i class="fas fa-tag"></i> Club Name *</label>
+                        <input type="text" id="club-name" placeholder="e.g., Amrita Robotics Club" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="club-category"><i class="fas fa-layer-group"></i> Category *</label>
+                        <select id="club-category" required>
+                            <option value="">Select Category</option>
+                            <option value="tech">Tech & Innovation</option>
+                            <option value="arts">Arts & Design</option>
+                            <option value="music">Music & Performance</option>
+                            <option value="sports">Sports & Wellness</option>
+                            <option value="media">Media & Publications</option>
+                            <option value="community">Community Service</option>
+                            <option value="cultural">Cultural</option>
+                            <option value="ai">AI & Robotics</option>
+                            <option value="science">Science & Research</option>
+                            <option value="coding">Coding & Development</option>
+                            <option value="literary">Literary & Debate</option>
+                            <option value="entrepreneurship">Entrepreneurship</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Club Logo *</label>
+                    <div class="upload-area" id="logo-upload-area" onclick="document.getElementById('club-logo').click()">
+                        <input type="file" id="club-logo" accept="image/*" onchange="handleLogoUpload(event)" hidden>
+                        <div class="upload-placeholder" id="logo-placeholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload logo</p>
+                            <span>PNG, JPG up to 2MB</span>
+                        </div>
+                        <img id="logo-preview" class="upload-preview hidden" alt="Logo preview">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="club-head"><i class="fas fa-user-tie"></i> Club Head *</label>
+                        <input type="text" id="club-head" placeholder="e.g., Dr. Ramesh Kumar" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="club-contact"><i class="fas fa-phone"></i> Contact Number *</label>
+                        <input type="tel" id="club-contact" placeholder="e.g., +91 98765 43210" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="club-mission"><i class="fas fa-bullseye"></i> Mission *</label>
+                    <textarea id="club-mission" rows="3" placeholder="Describe the club's mission..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="club-vision"><i class="fas fa-eye"></i> Vision *</label>
+                    <textarea id="club-vision" rows="3" placeholder="Describe the club's vision..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="club-joining"><i class="fas fa-door-open"></i> Joining Procedure *</label>
+                    <textarea id="club-joining" rows="3" placeholder="How can students join this club?" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-trophy"></i> Achievements (up to 3 images)</label>
+                    <div class="achievements-upload">
+                        <div class="achievement-slot" id="ach-slot-0" onclick="document.getElementById('ach-file-0').click()">
+                            <input type="file" id="ach-file-0" accept="image/*" onchange="handleAchievementUpload(event, 0)" hidden>
+                            <div class="ach-placeholder" id="ach-placeholder-0">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <img id="ach-preview-0" class="ach-preview hidden" alt="Achievement 1">
+                        </div>
+                        <div class="achievement-slot" id="ach-slot-1" onclick="document.getElementById('ach-file-1').click()">
+                            <input type="file" id="ach-file-1" accept="image/*" onchange="handleAchievementUpload(event, 1)" hidden>
+                            <div class="ach-placeholder" id="ach-placeholder-1">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <img id="ach-preview-1" class="ach-preview hidden" alt="Achievement 2">
+                        </div>
+                        <div class="achievement-slot" id="ach-slot-2" onclick="document.getElementById('ach-file-2').click()">
+                            <input type="file" id="ach-file-2" accept="image/*" onchange="handleAchievementUpload(event, 2)" hidden>
+                            <div class="ach-placeholder" id="ach-placeholder-2">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <img id="ach-preview-2" class="ach-preview hidden" alt="Achievement 3">
+                        </div>
+                    </div>
+                    <div class="ach-captions">
+                        <input type="text" id="ach-caption-0" placeholder="Caption for image 1" class="ach-caption-input">
+                        <input type="text" id="ach-caption-1" placeholder="Caption for image 2" class="ach-caption-input">
+                        <input type="text" id="ach-caption-2" placeholder="Caption for image 3" class="ach-caption-input">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeClubModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> <span id="club-submit-text">Save Club</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== DELETE CONFIRM MODAL ===== -->
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal delete-modal-content">
+            <div class="delete-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3>Delete Club</h3>
+            <p>Are you sure you want to delete <strong id="delete-club-name"></strong>? This action cannot be undone.</p>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirm-delete-btn" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+
+        <!-- ===== HOME VIEW ===== -->
+        <section class="view" id="view-home">
+            <!-- Hero Section -->
+            <div class="hero">
+                <div class="hero-bg-shapes">
+                    <div class="shape shape-1"></div>
+                    <div class="shape shape-2"></div>
+                    <div class="shape shape-3"></div>
+                    <div class="shape shape-4"></div>
+                </div>
+                <div class="hero-content">
+                    <div class="hero-badge"><i class="fas fa-star"></i> Explore 100+ Student-Led Clubs</div>
+                    <h1>Discover Your Passion<br>at <span class="highlight">Amrita</span></h1>
+                    <p class="hero-subtitle">Connect, create, and lead. Find your community and explore new interests among our vibrant student organizations.</p>
+                    <div class="hero-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="hero-search-input" placeholder="Search for a club or interest..." oninput="handleSearch(this.value)">
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <i class="fas fa-users"></i>
+                            <span class="stat-number" id="stat-clubs">0</span>
+                            <span class="stat-label">Active Clubs</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-layer-group"></i>
+                            <span class="stat-number" id="stat-categories">12</span>
+                            <span class="stat-label">Categories</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-user-graduate"></i>
+                            <span class="stat-number">5000+</span>
+                            <span class="stat-label">Members</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Filter Section -->
+            <div class="section categories-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-th-large"></i> Browse by Category</h2>
+                    <p>Find clubs that match your interests</p>
+                </div>
+                <div class="category-grid" id="category-grid">
+                    <button class="category-card active" data-category="all" onclick="filterByCategory('all')">
+                        <div class="cat-icon"><i class="fas fa-globe"></i></div>
+                        <span>All Clubs</span>
+                        <span class="cat-count" id="cat-count-all">0</span>
+                    </button>
+                    <button class="category-card" data-category="tech" onclick="filterByCategory('tech')">
+                        <div class="cat-icon"><i class="fas fa-microchip"></i></div>
+                        <span>Tech & Innovation</span>
+                        <span class="cat-count" id="cat-count-tech">0</span>
+                    </button>
+                    <button class="category-card" data-category="ai" onclick="filterByCategory('ai')">
+                        <div class="cat-icon"><i class="fas fa-robot"></i></div>
+                        <span>AI & Robotics</span>
+                        <span class="cat-count" id="cat-count-ai">0</span>
+                    </button>
+                    <button class="category-card" data-category="coding" onclick="filterByCategory('coding')">
+                        <div class="cat-icon"><i class="fas fa-code"></i></div>
+                        <span>Coding & Dev</span>
+                        <span class="cat-count" id="cat-count-coding">0</span>
+                    </button>
+                    <button class="category-card" data-category="science" onclick="filterByCategory('science')">
+                        <div class="cat-icon"><i class="fas fa-flask"></i></div>
+                        <span>Science & Research</span>
+                        <span class="cat-count" id="cat-count-science">0</span>
+                    </button>
+                    <button class="category-card" data-category="arts" onclick="filterByCategory('arts')">
+                        <div class="cat-icon"><i class="fas fa-palette"></i></div>
+                        <span>Arts & Design</span>
+                        <span class="cat-count" id="cat-count-arts">0</span>
+                    </button>
+                    <button class="category-card" data-category="music" onclick="filterByCategory('music')">
+                        <div class="cat-icon"><i class="fas fa-music"></i></div>
+                        <span>Music & Performance</span>
+                        <span class="cat-count" id="cat-count-music">0</span>
+                    </button>
+                    <button class="category-card" data-category="cultural" onclick="filterByCategory('cultural')">
+                        <div class="cat-icon"><i class="fas fa-theater-masks"></i></div>
+                        <span>Cultural</span>
+                        <span class="cat-count" id="cat-count-cultural">0</span>
+                    </button>
+                    <button class="category-card" data-category="sports" onclick="filterByCategory('sports')">
+                        <div class="cat-icon"><i class="fas fa-futbol"></i></div>
+                        <span>Sports & Wellness</span>
+                        <span class="cat-count" id="cat-count-sports">0</span>
+                    </button>
+                    <button class="category-card" data-category="media" onclick="filterByCategory('media')">
+                        <div class="cat-icon"><i class="fas fa-newspaper"></i></div>
+                        <span>Media & Publications</span>
+                        <span class="cat-count" id="cat-count-media">0</span>
+                    </button>
+                    <button class="category-card" data-category="community" onclick="filterByCategory('community')">
+                        <div class="cat-icon"><i class="fas fa-hands-helping"></i></div>
+                        <span>Community Service</span>
+                        <span class="cat-count" id="cat-count-community">0</span>
+                    </button>
+                    <button class="category-card" data-category="literary" onclick="filterByCategory('literary')">
+                        <div class="cat-icon"><i class="fas fa-book-open"></i></div>
+                        <span>Literary & Debate</span>
+                        <span class="cat-count" id="cat-count-literary">0</span>
+                    </button>
+                    <button class="category-card" data-category="entrepreneurship" onclick="filterByCategory('entrepreneurship')">
+                        <div class="cat-icon"><i class="fas fa-lightbulb"></i></div>
+                        <span>Entrepreneurship</span>
+                        <span class="cat-count" id="cat-count-entrepreneurship">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Clubs Grid -->
+            <div class="section clubs-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-star"></i> <span id="clubs-section-title">Featured Clubs</span></h2>
+                    <p id="clubs-section-subtitle">Discover our most popular student organizations</p>
+                </div>
+                <div class="clubs-grid" id="clubs-grid">
+                    <!-- Clubs rendered by JS -->
+                </div>
+                <div class="no-results hidden" id="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No clubs found</h3>
+                    <p>Try adjusting your search or filter criteria</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CLUB DETAIL VIEW ===== -->
+        <section class="view hidden" id="view-club">
+            <div class="club-detail" id="club-detail-content">
+                <!-- Rendered by JS -->
+            </div>
+        </section>
+
+        <!-- ===== ADMIN VIEW ===== -->
+        <section class="view hidden" id="view-admin">
+            <div class="admin-container">
+                <div class="admin-header">
+                    <div class="admin-title">
+                        <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+                        <span class="admin-badge" id="admin-role-badge">Full Access</span>
+                    </div>
+                    <button class="btn btn-primary" id="admin-add-btn" onclick="openAddClubModal()">
+                        <i class="fas fa-plus"></i> Add New Club
+                    </button>
+                </div>
+                <div class="admin-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="admin-search-input" placeholder="Search clubs in dashboard..." oninput="handleAdminSearch(this.value)">
+                </div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table" id="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Logo</th>
+                                <th>Club Name</th>
+                                <th>Category</th>
+                                <th>Club Head</th>
+                                <th>Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="admin-no-results hidden" id="admin-no-results">
+                    <i class="fas fa-folder-open"></i>
+                    <p>No clubs found. Add your first club!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CONTACT VIEW ===== -->
+        <section class="view hidden" id="view-contact">
+            <div class="contact-container">
+                <div class="contact-header">
+                    <h2><i class="fas fa-envelope"></i> Contact Us</h2>
+                    <p>Have questions about student clubs? Reach out to us!</p>
+                </div>
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <h3>Address</h3>
+                        <p>Amrita Vishwa Vidyapeetham<br>Amritanagar, Coimbatore<br>Tamil Nadu - 641112</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
+                        <h3>Phone</h3>
+                        <p>+91 422 268 5000</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="fas fa-envelope-open-text"></i></div>
+                        <h3>Email</h3>
+                        <p>clubs@amrita.edu</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="fas fa-clock"></i></div>
+                        <h3>Office Hours</h3>
+                        <p>Mon - Fri: 9:00 AM - 5:00 PM<br>Sat: 9:00 AM - 1:00 PM</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="brand-icon"><i class="fas fa-university"></i></div>
+                <span class="brand-name">AMRITA</span>
+                <p>Student Clubs Portal</p>
+            </div>
+            <div class="footer-links">
+                <a href="#home"><i class="fas fa-home"></i> Home</a>
+                <a href="#clubs"><i class="fas fa-users"></i> Clubs</a>
+                <a href="#contact"><i class="fas fa-envelope"></i> Contact</a>
+            </div>
+            <div class="footer-social">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Amrita Vishwa Vidyapeetham. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
