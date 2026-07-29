@@ -1252,6 +1252,10 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: 8px;
 }
 
+.contact-edit-btn {
+    margin-top: 1.2rem;
+}
+
 .contact-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

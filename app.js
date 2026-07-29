@@ -23,6 +23,7 @@ const CATEGORIES = {
 
 // ===== STATE =====
 let clubs = [];
+let contactInfo = null;
 let currentAdmin = null; // null, 'a1', or 'a2'
 let currentFilter = 'all';
 let currentSearch = '';
@@ -34,6 +35,7 @@ let tempAchievements = [null, null, null];
 document.addEventListener('DOMContentLoaded', () => {
     try {
         loadClubs();
+        loadContactInfo();
         handleRoute();
         setupScrollListener();
         window.addEventListener('hashchange', handleRoute);
@@ -105,6 +107,7 @@ function handleRoute() {
         }
     } else if (route === '#contact') {
         showView('contact');
+        renderContactPage();
     } else if (route === '#clubs') {
         showView('home');
         currentFilter = 'all';
@@ -986,4 +989,99 @@ function getSeedClubs() {
             ]
         }
     ];
+}
+
+// ===== CONTACT INFO MANAGEMENT =====
+const DEFAULT_CONTACT = {
+    address: 'Amrita Vishwa Vidyapeetham\nAmritanagar, Coimbatore\nTamil Nadu - 641112',
+    phone: '+91 422 268 5000',
+    email: 'clubs@amrita.edu',
+    hours: 'Mon - Fri: 9:00 AM - 5:00 PM\nSat: 9:00 AM - 1:00 PM'
+};
+
+function loadContactInfo() {
+    const stored = localStorage.getItem('amrita_contact');
+    if (stored) {
+        contactInfo = JSON.parse(stored);
+    } else {
+        contactInfo = { ...DEFAULT_CONTACT };
+        saveContactInfo();
+    }
+}
+
+function saveContactInfo() {
+    localStorage.setItem('amrita_contact', JSON.stringify(contactInfo));
+}
+
+function renderContactPage() {
+    const container = document.getElementById('contact-container');
+    if (!container) return;
+
+    const editBtnHTML = currentAdmin === 'a1'
+        ? `<button class="btn btn-primary contact-edit-btn" onclick="openContactModal()"><i class="fas fa-edit"></i> Edit Contact Info</button>`
+        : '';
+
+    const addressDisplay = escapeHTML(contactInfo.address).replace(/\n/g, '<br>');
+    const hoursDisplay = escapeHTML(contactInfo.hours).replace(/\n/g, '<br>');
+
+    container.innerHTML = `
+        <div class="contact-header">
+            <h2><i class="fas fa-envelope"></i> Contact Us</h2>
+            <p>Have questions about student clubs? Reach out to us!</p>
+            ${editBtnHTML}
+        </div>
+        <div class="contact-grid">
+            <div class="contact-card">
+                <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <h3>Address</h3>
+                <p>${addressDisplay}</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
+                <h3>Phone</h3>
+                <p>${escapeHTML(contactInfo.phone)}</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon"><i class="fas fa-envelope-open-text"></i></div>
+                <h3>Email</h3>
+                <p>${escapeHTML(contactInfo.email)}</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon"><i class="fas fa-clock"></i></div>
+                <h3>Office Hours</h3>
+                <p>${hoursDisplay}</p>
+            </div>
+        </div>
+    `;
+}
+
+function openContactModal() {
+    if (currentAdmin !== 'a1') {
+        showToast('Only Super Admin can edit contact info', 'error');
+        return;
+    }
+    document.getElementById('contact-address').value = contactInfo.address;
+    document.getElementById('contact-phone').value = contactInfo.phone;
+    document.getElementById('contact-email').value = contactInfo.email;
+    document.getElementById('contact-hours').value = contactInfo.hours;
+    document.getElementById('contact-modal').classList.add('show');
+}
+
+function closeContactModal() {
+    document.getElementById('contact-modal').classList.remove('show');
+}
+
+function handleContactSubmit(e) {
+    e.preventDefault();
+    if (currentAdmin !== 'a1') return;
+
+    contactInfo.address = document.getElementById('contact-address').value.trim();
+    contactInfo.phone = document.getElementById('contact-phone').value.trim();
+    contactInfo.email = document.getElementById('contact-email').value.trim();
+    contactInfo.hours = document.getElementById('contact-hours').value.trim();
+
+    saveContactInfo();
+    closeContactModal();
+    renderContactPage();
+    showToast('Contact information updated!', 'success');
 }
