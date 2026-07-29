@@ -387,44 +387,35 @@
 
         <!-- ===== CONTACT VIEW ===== -->
         <section class="view hidden" id="view-contact">
-            <div class="contact-container" id="contact-container">
-                <!-- Rendered dynamically by JS -->
+            <div class="contact-container">
+                <div class="contact-header">
+                    <h2><i class="fas fa-envelope"></i> Contact Us</h2>
+                    <p>Have questions about student clubs? Reach out to us!</p>
+                </div>
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <h3>Address</h3>
+                        <p>Amrita Vishwa Vidyapeetham<br>Amritanagar, Coimbatore<br>Tamil Nadu - 641112</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
+                        <h3>Phone</h3>
+                        <p>+91 422 268 5000</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="fas fa-envelope-open-text"></i></div>
+                        <h3>Email</h3>
+                        <p>clubs@amrita.edu</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="fas fa-clock"></i></div>
+                        <h3>Office Hours</h3>
+                        <p>Mon - Fri: 9:00 AM - 5:00 PM<br>Sat: 9:00 AM - 1:00 PM</p>
+                    </div>
+                </div>
             </div>
         </section>
-
-    <!-- ===== CONTACT EDIT MODAL ===== -->
-    <div class="modal-overlay" id="contact-modal">
-        <div class="modal club-modal-content">
-            <button class="modal-close" onclick="closeContactModal()"><i class="fas fa-times"></i></button>
-            <div class="modal-header">
-                <h2><i class="fas fa-edit"></i> Edit Contact Information</h2>
-            </div>
-            <form id="contact-form" onsubmit="handleContactSubmit(event)">
-                <div class="form-group">
-                    <label for="contact-address"><i class="fas fa-map-marker-alt"></i> Address</label>
-                    <textarea id="contact-address" rows="3" required></textarea>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="contact-phone"><i class="fas fa-phone-alt"></i> Phone</label>
-                        <input type="text" id="contact-phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-email"><i class="fas fa-envelope"></i> Email</label>
-                        <input type="email" id="contact-email" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="contact-hours"><i class="fas fa-clock"></i> Office Hours</label>
-                    <textarea id="contact-hours" rows="2" required></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeContactModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     </main>
 
