@@ -182,8 +182,29 @@ function closeLoginModal() {
 }
 
 function getSubAdminPassword(club) {
-    const raw = (club.name.replace(/\s+/g, '') + '@' + club.category).toLowerCase();
-    return raw.charAt(0).toUpperCase() + raw.slice(1);
+    const categoryObj = CATEGORIES[club.category];
+    const categoryName = categoryObj ? categoryObj.name : club.category;
+    
+    const clubPart = club.name.replace(/\s+/g, '').toLowerCase();
+    const formattedClub = clubPart.charAt(0).toUpperCase() + clubPart.slice(1);
+    const formattedCategory = categoryName.replace(/\s+/g, '').toLowerCase();
+    
+    return `${formattedClub}@${formattedCategory}`;
+}
+
+function checkSubAdminPassword(club, inputPassword) {
+    const primary = getSubAdminPassword(club);
+    
+    const clubPart = club.name.replace(/\s+/g, '').toLowerCase();
+    const formattedClub = clubPart.charAt(0).toUpperCase() + clubPart.slice(1);
+    const keyFallback = `${formattedClub}@${club.category.toLowerCase()}`;
+    
+    const categoryObj = CATEGORIES[club.category];
+    const categoryName = categoryObj ? categoryObj.name : club.category;
+    const cleanCategory = categoryName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const cleanFallback = `${formattedClub}@${cleanCategory}`;
+
+    return inputPassword === primary || inputPassword === keyFallback || inputPassword === cleanFallback;
 }
 
 function handleLogin(e) {
@@ -200,7 +221,7 @@ function handleLogin(e) {
         window.location.hash = '#admin';
     } else {
         // Check sub-admin passwords
-        const matchedClub = clubs.find(c => getSubAdminPassword(c) === password);
+        const matchedClub = clubs.find(c => checkSubAdminPassword(c, password));
         if (matchedClub) {
             currentAdmin = 'sub';
             subAdminClubId = matchedClub.id;
