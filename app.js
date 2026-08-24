@@ -21,6 +21,8 @@ const CATEGORIES = {
     entrepreneurship: { name: 'Entrepreneurship', icon: 'fas fa-lightbulb' }
 };
 
+const MAX_ACHIEVEMENTS = 15;
+
 // ===== STATE =====
 let clubs = [];
 let currentAdmin = null; // null, 'a1', or 'a2'
@@ -28,12 +30,13 @@ let currentFilter = 'all';
 let currentSearch = '';
 let deleteTargetId = null;
 let tempLogo = null;
-let tempAchievements = [null, null, null];
+let tempAchievements = new Array(MAX_ACHIEVEMENTS).fill(null);
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     try {
         loadClubs();
+        generateAchievementSlots();
         handleRoute();
         setupScrollListener();
         window.addEventListener('hashchange', handleRoute);
@@ -579,16 +582,18 @@ function resetClubForm() {
     document.getElementById('club-form').reset();
     document.getElementById('club-edit-id').value = '';
     tempLogo = null;
-    tempAchievements = [null, null, null];
+    tempAchievements = new Array(MAX_ACHIEVEMENTS).fill(null);
 
     // Reset logo preview
     document.getElementById('logo-preview').classList.add('hidden');
     document.getElementById('logo-placeholder').classList.remove('hidden');
 
     // Reset achievement previews
-    for (let i = 0; i < 3; i++) {
-        document.getElementById(`ach-preview-${i}`).classList.add('hidden');
-        document.getElementById(`ach-placeholder-${i}`).classList.remove('hidden');
+    for (let i = 0; i < MAX_ACHIEVEMENTS; i++) {
+        const preview = document.getElementById(`ach-preview-${i}`);
+        const placeholder = document.getElementById(`ach-placeholder-${i}`);
+        if (preview) preview.classList.add('hidden');
+        if (placeholder) placeholder.classList.remove('hidden');
     }
 }
 
@@ -614,7 +619,7 @@ function handleClubSubmit(e) {
         mission: document.getElementById('club-mission').value.trim(),
         vision: document.getElementById('club-vision').value.trim(),
         joiningProcedure: document.getElementById('club-joining').value.trim(),
-        achievements: [0, 1, 2].map(i => ({
+        achievements: Array.from({ length: MAX_ACHIEVEMENTS }, (_, i) => ({
             image: tempAchievements[i],
             caption: document.getElementById(`ach-caption-${i}`).value.trim()
         }))
@@ -666,6 +671,29 @@ function confirmDelete() {
     renderAdminTable();
     renderClubsGrid();
     showToast('Club deleted successfully', 'success');
+}
+
+// ===== DYNAMIC ACHIEVEMENT SLOTS =====
+function generateAchievementSlots() {
+    const uploadGrid = document.getElementById('achievements-upload-grid');
+    const captionsGrid = document.getElementById('ach-captions-grid');
+    if (!uploadGrid || !captionsGrid) return;
+
+    let slotsHTML = '';
+    let captionsHTML = '';
+    for (let i = 0; i < MAX_ACHIEVEMENTS; i++) {
+        slotsHTML += `
+            <div class="achievement-slot" id="ach-slot-${i}" onclick="document.getElementById('ach-file-${i}').click()">
+                <input type="file" id="ach-file-${i}" accept="image/*" onchange="handleAchievementUpload(event, ${i})" hidden>
+                <div class="ach-placeholder" id="ach-placeholder-${i}">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <img id="ach-preview-${i}" class="ach-preview hidden" alt="Achievement ${i + 1}">
+            </div>`;
+        captionsHTML += `<input type="text" id="ach-caption-${i}" placeholder="Caption ${i + 1}" class="ach-caption-input">`;
+    }
+    uploadGrid.innerHTML = slotsHTML;
+    captionsGrid.innerHTML = captionsHTML;
 }
 
 // ===== FILE UPLOADS =====
