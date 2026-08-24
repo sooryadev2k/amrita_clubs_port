@@ -1,9 +1,9 @@
 /* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
 
 // ===== CONSTANTS =====
-const ADMIN_PASSWORDS = {
-    'Admin@1': 'a1',
-    'admin2': 'a2'
+const ADMIN_USERS = {
+    'soorya': { password: 'Admin@1', role: 'a1' },
+    'maom': { password: 'admin2', role: 'a2' }
 };
 
 const CATEGORIES = {
@@ -172,9 +172,11 @@ function toggleMobileNav() {
 // ===== AUTH =====
 function openLoginModal() {
     document.getElementById('login-modal').classList.add('show');
+    const uInput = document.getElementById('login-username');
+    if (uInput) uInput.value = '';
     document.getElementById('login-password').value = '';
     document.getElementById('login-error').classList.add('hidden');
-    document.getElementById('login-password').focus();
+    if (uInput) uInput.focus();
 }
 
 function closeLoginModal() {
@@ -209,31 +211,45 @@ function checkSubAdminPassword(club, inputPassword) {
 
 function handleLogin(e) {
     e.preventDefault();
+    const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
-    const role = ADMIN_PASSWORDS[password];
 
-    if (role) {
-        currentAdmin = role;
+    const lowerUser = username.toLowerCase();
+    const adminAccount = ADMIN_USERS[lowerUser];
+
+    if (adminAccount && adminAccount.password === password) {
+        currentAdmin = adminAccount.role;
         subAdminClubId = null;
         closeLoginModal();
         updateAuthUI();
-        showToast(`Logged in as ${role === 'a1' ? 'Super Admin' : 'Club Manager'}`, 'success');
+        showToast(`Logged in as ${currentAdmin === 'a1' ? 'Super Admin (soorya)' : 'Club Manager (MAOM)'}`, 'success');
+        window.location.hash = '#admin';
+        return;
+    }
+
+    // Check sub-admin credentials: username matches club name (flexible on case & spaces)
+    const matchedClub = clubs.find(c => {
+        const cNameLower = c.name.trim().toLowerCase();
+        const cNameNoSpaces = c.name.replace(/\s+/g, '').toLowerCase();
+        const uLower = username.toLowerCase();
+        const uNoSpaces = username.replace(/\s+/g, '').toLowerCase();
+
+        const nameMatches = (uLower === cNameLower || uNoSpaces === cNameNoSpaces);
+        return nameMatches && checkSubAdminPassword(c, password);
+    });
+
+    if (matchedClub) {
+        currentAdmin = 'sub';
+        subAdminClubId = matchedClub.id;
+        closeLoginModal();
+        updateAuthUI();
+        showToast(`Logged in as Sub-Admin for ${matchedClub.name}`, 'success');
         window.location.hash = '#admin';
     } else {
-        // Check sub-admin passwords
-        const matchedClub = clubs.find(c => checkSubAdminPassword(c, password));
-        if (matchedClub) {
-            currentAdmin = 'sub';
-            subAdminClubId = matchedClub.id;
-            closeLoginModal();
-            updateAuthUI();
-            showToast(`Logged in as Sub-Admin for ${matchedClub.name}`, 'success');
-            window.location.hash = '#admin';
-        } else {
-            document.getElementById('login-error').classList.remove('hidden');
-            document.getElementById('login-password').value = '';
-            document.getElementById('login-password').focus();
-        }
+        document.getElementById('login-error').classList.remove('hidden');
+        document.getElementById('login-password').value = '';
+        const uInput = document.getElementById('login-username');
+        if (uInput) uInput.focus();
     }
 }
 
