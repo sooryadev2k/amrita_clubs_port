@@ -182,8 +182,8 @@ function closeLoginModal() {
 }
 
 function getSubAdminPassword(club) {
-    const nameNoSpaces = club.name.replace(/\s+/g, '');
-    return `${nameNoSpaces}@${club.category}`;
+    const raw = (club.name.replace(/\s+/g, '') + '@' + club.category).toLowerCase();
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
 
 function handleLogin(e) {
