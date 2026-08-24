@@ -25,7 +25,8 @@ const MAX_ACHIEVEMENTS = 15;
 
 // ===== STATE =====
 let clubs = [];
-let currentAdmin = null; // null, 'a1', or 'a2'
+let currentAdmin = null; // null, 'a1', 'a2', or 'sub'
+let subAdminClubId = null; // club ID for sub-admin access
 let currentFilter = 'all';
 let currentSearch = '';
 let deleteTargetId = null;
@@ -180,6 +181,11 @@ function closeLoginModal() {
     document.getElementById('login-modal').classList.remove('show');
 }
 
+function getSubAdminPassword(club) {
+    const nameNoSpaces = club.name.replace(/\s+/g, '');
+    return `${nameNoSpaces}@${club.category}`;
+}
+
 function handleLogin(e) {
     e.preventDefault();
     const password = document.getElementById('login-password').value;
@@ -187,19 +193,32 @@ function handleLogin(e) {
 
     if (role) {
         currentAdmin = role;
+        subAdminClubId = null;
         closeLoginModal();
         updateAuthUI();
         showToast(`Logged in as ${role === 'a1' ? 'Super Admin' : 'Club Manager'}`, 'success');
         window.location.hash = '#admin';
     } else {
-        document.getElementById('login-error').classList.remove('hidden');
-        document.getElementById('login-password').value = '';
-        document.getElementById('login-password').focus();
+        // Check sub-admin passwords
+        const matchedClub = clubs.find(c => getSubAdminPassword(c) === password);
+        if (matchedClub) {
+            currentAdmin = 'sub';
+            subAdminClubId = matchedClub.id;
+            closeLoginModal();
+            updateAuthUI();
+            showToast(`Logged in as Sub-Admin for ${matchedClub.name}`, 'success');
+            window.location.hash = '#admin';
+        } else {
+            document.getElementById('login-error').classList.remove('hidden');
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-password').focus();
+        }
     }
 }
 
 function logout() {
     currentAdmin = null;
+    subAdminClubId = null;
     updateAuthUI();
     showToast('Logged out successfully', 'info');
     window.location.hash = '#home';
@@ -452,16 +471,32 @@ function renderAdminTable(searchQuery = '') {
     if (currentAdmin === 'a1') {
         badge.textContent = 'Super Admin (A1)';
         badge.className = 'admin-badge';
-    } else {
+    } else if (currentAdmin === 'a2') {
         badge.textContent = 'Club Manager (A2)';
+        badge.className = 'admin-badge limited';
+    } else if (currentAdmin === 'sub') {
+        const subClub = clubs.find(c => c.id === subAdminClubId);
+        badge.textContent = `Sub-Admin: ${subClub ? subClub.name : 'Club'}`;
         badge.className = 'admin-badge limited';
     }
 
-    // Show/hide edit/delete for a2
+    // Show/hide add button — sub-admins cannot add
     const addBtn = document.getElementById('admin-add-btn');
-    if (addBtn) addBtn.classList.remove('hidden');
+    if (addBtn) {
+        if (currentAdmin === 'sub') {
+            addBtn.classList.add('hidden');
+        } else {
+            addBtn.classList.remove('hidden');
+        }
+    }
 
     let filtered = [...clubs];
+
+    // Sub-admins only see their own club
+    if (currentAdmin === 'sub' && subAdminClubId) {
+        filtered = filtered.filter(c => c.id === subAdminClubId);
+    }
+
     if (searchQuery) {
         filtered = filtered.filter(c =>
             c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -485,10 +520,12 @@ function renderAdminTable(searchQuery = '') {
             ? `<img src="${club.logo}" alt="${club.name}" class="admin-table-logo">`
             : `<div class="admin-table-logo-placeholder"><i class="${cat.icon}"></i></div>`;
 
-        const editBtn = currentAdmin === 'a1'
+        const canEdit = currentAdmin === 'a1' || (currentAdmin === 'sub' && subAdminClubId === club.id);
+        const canDelete = currentAdmin === 'a1';
+        const editBtn = canEdit
             ? `<button class="admin-action-btn edit" title="Edit" onclick="openEditClubModal('${club.id}')"><i class="fas fa-edit"></i></button>`
             : '';
-        const deleteBtn = currentAdmin === 'a1'
+        const deleteBtn = canDelete
             ? `<button class="admin-action-btn delete" title="Delete" onclick="openDeleteModal('${club.id}')"><i class="fas fa-trash"></i></button>`
             : '';
 
@@ -524,8 +561,9 @@ function openAddClubModal() {
 }
 
 function openEditClubModal(id) {
-    if (currentAdmin !== 'a1') {
-        showToast('You do not have permission to edit clubs', 'error');
+    const canEdit = currentAdmin === 'a1' || (currentAdmin === 'sub' && subAdminClubId === id);
+    if (!canEdit) {
+        showToast('You do not have permission to edit this club', 'error');
         return;
     }
 
@@ -604,8 +642,13 @@ function handleClubSubmit(e) {
     const isEdit = !!editId;
 
     // Check permissions
-    if (isEdit && currentAdmin !== 'a1') {
-        showToast('You do not have permission to edit clubs', 'error');
+    const canEdit = currentAdmin === 'a1' || (currentAdmin === 'sub' && subAdminClubId === editId);
+    if (isEdit && !canEdit) {
+        showToast('You do not have permission to edit this club', 'error');
+        return;
+    }
+    if (!isEdit && currentAdmin === 'sub') {
+        showToast('Sub-admins cannot add new clubs', 'error');
         return;
     }
 
