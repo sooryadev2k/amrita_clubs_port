@@ -32,11 +32,14 @@ let currentSearch = '';
 let deleteTargetId = null;
 let tempLogo = null;
 let tempAchievements = new Array(MAX_ACHIEVEMENTS).fill(null);
+let customAdminPasswords = {}; // { 'a1': '...', 'a2': '...' }
+let customSubAdminPasswords = {}; // { 'club_id': '...' }
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     try {
         loadClubs();
+        loadCustomPasswords();
         generateAchievementSlots();
         handleRoute();
         setupScrollListener();
@@ -209,33 +212,70 @@ function checkSubAdminPassword(club, inputPassword) {
     return inputPassword === primary || inputPassword === keyFallback || inputPassword === cleanFallback;
 }
 
+function getSubAdminUsername(club) {
+    return club.name.replace(/\s+/g, '').toLowerCase();
+}
+
+function loadCustomPasswords() {
+    try {
+        const adminStored = localStorage.getItem('amrita_custom_admin_passwords');
+        if (adminStored) customAdminPasswords = JSON.parse(adminStored);
+        const subStored = localStorage.getItem('amrita_custom_subadmin_passwords');
+        if (subStored) customSubAdminPasswords = JSON.parse(subStored);
+    } catch (e) {
+        console.error('Error loading custom passwords:', e);
+    }
+}
+
+function saveCustomPasswords() {
+    localStorage.setItem('amrita_custom_admin_passwords', JSON.stringify(customAdminPasswords));
+    localStorage.setItem('amrita_custom_subadmin_passwords', JSON.stringify(customSubAdminPasswords));
+}
+
 function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
 
     const lowerUser = username.toLowerCase();
-    const adminAccount = ADMIN_USERS[lowerUser];
 
-    if (adminAccount && adminAccount.password === password) {
-        currentAdmin = adminAccount.role;
-        subAdminClubId = null;
-        closeLoginModal();
-        updateAuthUI();
-        showToast(`Logged in as ${currentAdmin === 'a1' ? 'Super Admin (soorya)' : 'Club Manager (MAOM)'}`, 'success');
-        window.location.hash = '#admin';
-        return;
+    // Check A1 (soorya)
+    if (lowerUser === 'soorya') {
+        const expectedA1 = customAdminPasswords['a1'] || 'Admin@1';
+        if (password === expectedA1) {
+            currentAdmin = 'a1';
+            subAdminClubId = null;
+            closeLoginModal();
+            updateAuthUI();
+            showToast('Logged in as Super Admin (soorya)', 'success');
+            window.location.hash = '#admin';
+            return;
+        }
     }
 
-    // Check sub-admin credentials: username matches club name (flexible on case & spaces)
-    const matchedClub = clubs.find(c => {
-        const cNameLower = c.name.trim().toLowerCase();
-        const cNameNoSpaces = c.name.replace(/\s+/g, '').toLowerCase();
-        const uLower = username.toLowerCase();
-        const uNoSpaces = username.replace(/\s+/g, '').toLowerCase();
+    // Check A2 (MAOM)
+    if (lowerUser === 'maom') {
+        const expectedA2 = customAdminPasswords['a2'] || 'admin2';
+        if (password === expectedA2) {
+            currentAdmin = 'a2';
+            subAdminClubId = null;
+            closeLoginModal();
+            updateAuthUI();
+            showToast('Logged in as Club Manager (MAOM)', 'success');
+            window.location.hash = '#admin';
+            return;
+        }
+    }
 
-        const nameMatches = (uLower === cNameLower || uNoSpaces === cNameNoSpaces);
-        return nameMatches && checkSubAdminPassword(c, password);
+    // Check Sub-Admin
+    const matchedClub = clubs.find(c => {
+        const subUsername = getSubAdminUsername(c);
+        if (username.toLowerCase() !== subUsername) return false;
+
+        if (customSubAdminPasswords[c.id]) {
+            return password === customSubAdminPasswords[c.id];
+        }
+        return checkSubAdminPassword(c, password);
     });
 
     if (matchedClub) {
@@ -251,6 +291,88 @@ function handleLogin(e) {
         const uInput = document.getElementById('login-username');
         if (uInput) uInput.focus();
     }
+}
+
+// ===== CHANGE PASSWORD MANAGEMENT =====
+function getActiveAccountPassword() {
+    if (currentAdmin === 'a1') {
+        return customAdminPasswords['a1'] || 'Admin@1';
+    } else if (currentAdmin === 'a2') {
+        return customAdminPasswords['a2'] || 'admin2';
+    } else if (currentAdmin === 'sub' && subAdminClubId) {
+        if (customSubAdminPasswords[subAdminClubId]) {
+            return customSubAdminPasswords[subAdminClubId];
+        }
+        const club = clubs.find(c => c.id === subAdminClubId);
+        return club ? getSubAdminPassword(club) : '';
+    }
+    return '';
+}
+
+function openChangePasswordModal() {
+    if (!currentAdmin) {
+        showToast('Please log in first', 'error');
+        return;
+    }
+    document.getElementById('change-password-modal').classList.add('show');
+    document.getElementById('change-current-pass').value = '';
+    document.getElementById('change-new-pass').value = '';
+    document.getElementById('change-confirm-pass').value = '';
+    document.getElementById('change-pass-error').classList.add('hidden');
+    document.getElementById('change-current-pass').focus();
+}
+
+function closeChangePasswordModal() {
+    document.getElementById('change-password-modal').classList.remove('show');
+}
+
+function handleChangePassword(e) {
+    e.preventDefault();
+    const currentInput = document.getElementById('change-current-pass').value;
+    const newPass = document.getElementById('change-new-pass').value;
+    const confirmPass = document.getElementById('change-confirm-pass').value;
+    const errorEl = document.getElementById('change-pass-error');
+    const errorText = document.getElementById('change-pass-error-text');
+
+    const expectedCurrent = getActiveAccountPassword();
+
+    let isCurrentValid = (currentInput === expectedCurrent);
+    if (!isCurrentValid && currentAdmin === 'sub' && subAdminClubId) {
+        const club = clubs.find(c => c.id === subAdminClubId);
+        if (club && checkSubAdminPassword(club, currentInput)) {
+            isCurrentValid = true;
+        }
+    }
+
+    if (!isCurrentValid) {
+        errorText.textContent = 'Current password is incorrect.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    if (newPass !== confirmPass) {
+        errorText.textContent = 'New passwords do not match.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    if (!newPass.trim()) {
+        errorText.textContent = 'New password cannot be empty.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    if (currentAdmin === 'a1') {
+        customAdminPasswords['a1'] = newPass;
+    } else if (currentAdmin === 'a2') {
+        customAdminPasswords['a2'] = newPass;
+    } else if (currentAdmin === 'sub' && subAdminClubId) {
+        customSubAdminPasswords[subAdminClubId] = newPass;
+    }
+
+    saveCustomPasswords();
+    closeChangePasswordModal();
+    showToast('Password changed successfully!', 'success');
 }
 
 function logout() {
