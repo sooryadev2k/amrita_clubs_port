@@ -2719,3 +2719,21 @@ h1, h2, h3, h4, h5, h6 {
     top: 4.5rem;
   }
 }
+.contact-head-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.club-heads-container {
+  margin-top: 0.25rem;
+}
+
+.club-heads-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--gray-700);
+}
+
+.club-heads-list li {
+  margin-bottom: 0.2rem;
+}

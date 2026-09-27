@@ -490,7 +490,7 @@ function renderClubsGrid() {
                     </div>
                     <div class="club-card-name">${escapeHTML(club.name)}</div>
                     <div class="club-card-head">
-                        <i class="fas fa-user-tie"></i> ${escapeHTML(club.clubHead)}
+                        <i class="fas fa-user-tie"></i> ${formatClubHeadsInline(club.clubHead)}
                     </div>
                     <div class="club-card-footer">
                         <div class="club-card-contact">
@@ -561,7 +561,7 @@ function showClubDetail(id) {
                             <i class="${cat.icon}"></i> ${cat.name}
                         </span>
                         <span class="detail-meta-item">
-                            <i class="fas fa-user-tie"></i> ${escapeHTML(club.clubHead)}
+                            <i class="fas fa-user-tie"></i> ${formatClubHeadsInline(club.clubHead)}
                         </span>
                         <span class="detail-meta-item">
                             <i class="fas fa-phone"></i> ${escapeHTML(club.contact)}
@@ -601,7 +601,10 @@ function showClubDetail(id) {
                 <div class="detail-contact-grid">
                     <div class="detail-contact-item">
                         <i class="fas fa-user-tie"></i>
-                        <span><strong>Club Head:</strong> ${escapeHTML(club.clubHead)}</span>
+                        <div class="contact-head-info">
+                            <strong>Club Head(s):</strong>
+                            <div class="club-heads-container">${formatClubHeads(club.clubHead)}</div>
+                        </div>
                     </div>
                     <div class="detail-contact-item">
                         <i class="fas fa-phone-alt"></i>
@@ -693,7 +696,7 @@ function renderAdminTable(searchQuery = '') {
                 <td>${logoHTML}</td>
                 <td><strong>${escapeHTML(club.name)}</strong></td>
                 <td><span class="category-badge"><i class="${cat.icon}"></i> ${cat.name}</span></td>
-                <td>${escapeHTML(club.clubHead)}</td>
+                <td>${formatClubHeadsInline(club.clubHead)}</td>
                 <td>${escapeHTML(club.contact)}</td>
                 <td>
                     <div class="admin-actions">
