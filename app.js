@@ -1,4 +1,4 @@
-﻿/* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
+/* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
 
 // ===== CONSTANTS =====
 const ADMIN_USERS = {
@@ -970,6 +970,19 @@ function escapeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+function formatClubHeads(str) {
+    if (!str) return '';
+    const names = str.split(',').map(n => n.trim()).filter(n => n);
+    if (names.length <= 1) return escapeHTML(str);
+    return '<ul class="club-heads-list">' + names.map(n => `<li>${escapeHTML(n)}</li>`).join('') + '</ul>';
+}
+
+function formatClubHeadsInline(str) {
+    if (!str) return '';
+    const names = str.split(',').map(n => n.trim()).filter(n => n);
+    return names.map(n => escapeHTML(n)).join(', ');
 }
 
 // ===== SEED DATA =====
