@@ -1,4 +1,4 @@
-/* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
+﻿/* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
 
 // ===== CONSTANTS =====
 const ADMIN_USERS = {
@@ -36,9 +36,9 @@ let customAdminPasswords = {}; // { 'a1': '...', 'a2': '...' }
 let customSubAdminPasswords = {}; // { 'club_id': '...' }
 
 // ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     try {
-        await loadClubs();
+        loadClubs();
         loadCustomPasswords();
         generateAchievementSlots();
         handleRoute();
@@ -56,28 +56,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-async function loadClubs() {
-    try {
-        const response = await fetch('data.json?t=' + new Date().getTime());
-        if (response.ok) {
-            clubs = await response.json();
-            // Optional: still cache locally in case of offline reload
-            localStorage.setItem('amrita_clubs', JSON.stringify(clubs));
-        } else {
-            throw new Error('Fetch failed');
-        }
-    } catch (e) {
-        console.warn('Failed to load data.json, falling back to local storage', e);
-        const stored = localStorage.getItem('amrita_clubs');
-        if (stored) {
-            clubs = JSON.parse(stored);
-        } else {
-            // Ultimate fallback
-            if (typeof getSeedClubs === 'function') clubs = getSeedClubs();
-        }
+function loadClubs() {
+    const stored = localStorage.getItem('amrita_clubs');
+    if (stored) {
+        clubs = JSON.parse(stored);
+    } else {
+        clubs = getSeedClubs();
+        saveClubs();
     }
     updateStats();
 }
+
 
 function saveClubs() {
     localStorage.setItem('amrita_clubs', JSON.stringify(clubs));
@@ -648,7 +637,7 @@ function renderAdminTable(searchQuery = '') {
         badge.className = 'admin-badge limited';
     }
 
-    // Show/hide add button Ã¢â‚¬â€ sub-admins cannot add
+    // Show/hide add button ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â sub-admins cannot add
     const addBtn = document.getElementById('admin-add-btn');
     if (addBtn) {
         if (currentAdmin === 'sub') {
@@ -658,16 +647,7 @@ function renderAdminTable(searchQuery = '') {
         }
     }
 
-    const ghBtn = document.getElementById('admin-github-btn');
-    if (ghBtn) {
-        if (currentAdmin === 'a1') {
-            ghBtn.classList.remove('hidden');
-        } else {
-            ghBtn.classList.add('hidden');
-        }
-    }
-
-    let filtered = [...clubs];
+let filtered = [...clubs];
 
     // Sub-admins only see their own club
     if (currentAdmin === 'sub' && subAdminClubId) {
@@ -857,7 +837,6 @@ function handleClubSubmit(e) {
     }
 
     saveClubs();
-    pushToGitHub(clubs);
     closeClubModal();
     renderAdminTable();
     renderClubsGrid();
@@ -888,7 +867,6 @@ function confirmDelete() {
 
     clubs = clubs.filter(c => c.id !== deleteTargetId);
     saveClubs();
-    pushToGitHub(clubs);
     closeDeleteModal();
     renderAdminTable();
     renderClubsGrid();
@@ -1262,75 +1240,396 @@ function getSeedClubs() {
     ];
 }
 
-// ===== GITHUB INTEGRATION =====
-let githubConfig = JSON.parse(localStorage.getItem('amrita_github_config')) || null;
-
-function openGitHubModal() {
-    document.getElementById('github-modal').classList.add('show');
-    if (githubConfig) {
-        document.getElementById('gh-username').value = githubConfig.username || '';
-        document.getElementById('gh-repo').value = githubConfig.repo || '';
-        document.getElementById('gh-token').value = githubConfig.token || '';
-    }
+// ===== SEED DATA =====
+function getSeedClubs() {
+    return [
+  {
+    "id": "seed_001",
+    "name": "ASME",
+    "category": "tech",
+    "logo": null,
+    "clubHead": "Dr. Karthik V Shankar (Faculty Co-ordinator), Karthik (Chairperson), Dhwaneel (Vice Chair), Gautham (Secretary), Anusree Giridhar (Treasurer), Adisheshan (Media Head), Archana (WIE Chair), Shyamini (WIE Vice Chair), Adithya (WIE Secretary), Anjitha (WIE Joint Secretary), Niranjana & Anusree (WIE Event Heads)",
+    "contact": "https://www.instagram.com/asme.avv.amritapuri?igsh=MTF1NzRreW03OXUyeg==",
+    "mission": "To advance engineering for the benefit of humanity by inspiring, educating, and convening engineers to improve quality of life globally.",
+    "about": "ASME (American Society of Mechanical Engineers) currently has 3 factions under it which are Air Squad, Sim Forge and WIE. We currently have 3 ongoing projects Air Squad which are robowar, turtle bot and eHPVC.",
+    "joiningProcedure": "Interview based on the given study material",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Won the distinguished section award in 2025"
+      },
+      {
+        "image": null,
+        "caption": "First ASME student chapter to establish a WIE"
+      },
+      {
+        "image": null,
+        "caption": "1st year members selected for semi-final round in AMECE Hyderabad"
+      },
+      {
+        "image": null,
+        "caption": "2nd year members won honorable mention in MAHE Mobility Challenge"
+      },
+      {
+        "image": null,
+        "caption": "2nd year members won runners up in Srishti National Level Hackathon"
+      }
+    ]
+  },
+  {
+    "id": "seed_002",
+    "name": "IEEE Student Branch",
+    "category": "tech",
+    "logo": null,
+    "clubHead": "Prof. Meena Srinivasan",
+    "contact": "+91 87654 32109",
+    "mission": "To advance technology for humanity by connecting students with IEEE global resources, professional development opportunities, and cutting-edge technical knowledge.",
+    "about": "To be the most active and innovative IEEE student branch in South India, fostering a community of future tech leaders.",
+    "joiningProcedure": "Step 1: Register on ieee.org as a student member.\nStep 2: Contact the branch coordinator with your IEEE membership number.\nStep 3: Pay the annual branch fee.\nStep 4: Join our WhatsApp/Discord community for updates.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Best IEEE Student Branch Award 2023"
+      },
+      {
+        "image": null,
+        "caption": "IEEE Regional Conference Hosts"
+      },
+      {
+        "image": null,
+        "caption": "Published 15+ research papers"
+      }
+    ]
+  },
+  {
+    "id": "seed_003",
+    "name": "Veda Music Society",
+    "category": "music",
+    "logo": null,
+    "clubHead": "Smt. Lakshmi Priya",
+    "contact": "+91 76543 21098",
+    "mission": "To preserve and promote Indian classical music traditions while embracing contemporary musical expressions, creating a vibrant musical community on campus.",
+    "about": "To make Amrita a center of musical excellence where traditional and modern music forms coexist and inspire future generations of musicians.",
+    "joiningProcedure": "Step 1: Attend our weekly open mic sessions.\nStep 2: Audition with a piece of your choice (any genre).\nStep 3: Join our practice sessions and events.\nStep 4: Become a performing member after your first stage performance.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Winners at Inter-University Music Festival"
+      },
+      {
+        "image": null,
+        "caption": "Annual Concert with 2000+ attendees"
+      },
+      {
+        "image": null,
+        "caption": "Collaboration with professional artists"
+      }
+    ]
+  },
+  {
+    "id": "seed_004",
+    "name": "Arts Society",
+    "category": "arts",
+    "logo": null,
+    "clubHead": "Prof. Ananya Krishnan",
+    "contact": "+91 65432 10987",
+    "mission": "To cultivate artistic expression and design thinking among students through workshops, exhibitions, and collaborative art projects.",
+    "about": "To transform the campus into a living gallery that celebrates creativity and empowers students to express themselves through visual arts.",
+    "joiningProcedure": "Step 1: Visit our studio during open hours.\nStep 2: Submit a portfolio or attend a creative workshop.\nStep 3: Register as a member through the club portal.\nStep 4: Participate in your first collaborative project.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Campus Mural Project covering 500 sq ft"
+      },
+      {
+        "image": null,
+        "caption": "National Level Art Competition Winners"
+      },
+      {
+        "image": null,
+        "caption": "Annual Art Exhibition"
+      }
+    ]
+  },
+  {
+    "id": "seed_005",
+    "name": "Coding Club",
+    "category": "coding",
+    "logo": null,
+    "clubHead": "Mr. Arun Kumar",
+    "contact": "+91 54321 09876",
+    "mission": "To develop competitive programming skills and build a strong foundation in software development through regular contests, hackathons, and mentorship programs.",
+    "about": "To produce world-class competitive programmers and software engineers who can solve complex problems with elegant code.",
+    "joiningProcedure": "Step 1: Solve the entrance challenge on our online judge.\nStep 2: Attend the weekly coding practice sessions.\nStep 3: Participate in at least one internal contest.\nStep 4: Join our mentorship program.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "ICPC Regional Qualifiers - 5 teams"
+      },
+      {
+        "image": null,
+        "caption": "Google Code Jam top 1000 finishers"
+      },
+      {
+        "image": null,
+        "caption": "Hosted Hack-a-Thon with 500+ participants"
+      }
+    ]
+  },
+  {
+    "id": "seed_006",
+    "name": "Sports Club",
+    "category": "sports",
+    "logo": null,
+    "clubHead": "Coach Vikram Singh",
+    "contact": "+91 43210 98765",
+    "mission": "To promote physical fitness, sportsmanship, and competitive excellence among students through diverse sporting activities and professional coaching.",
+    "about": "To develop well-rounded athletes who excel in both academics and sports, representing Amrita at national and international sporting events.",
+    "joiningProcedure": "Step 1: Choose your sport of interest from our offerings.\nStep 2: Attend trials conducted at the beginning of each semester.\nStep 3: Complete a fitness assessment.\nStep 4: Join the regular training schedule.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Inter-University Champions in Cricket"
+      },
+      {
+        "image": null,
+        "caption": "State level Basketball Tournament Winners"
+      },
+      {
+        "image": null,
+        "caption": "15+ National level athletes"
+      }
+    ]
+  },
+  {
+    "id": "seed_007",
+    "name": "Amritavarshini Cultural Club",
+    "category": "cultural",
+    "logo": null,
+    "clubHead": "Dr. Priya Nair",
+    "contact": "+91 32109 87654",
+    "mission": "To celebrate India's diverse cultural heritage through dance, drama, festivals, and cultural exchange programs that unite students from all backgrounds.",
+    "about": "To be a vibrant cultural platform that preserves traditions while encouraging creative cultural expressions among youth.",
+    "joiningProcedure": "Step 1: Express interest at any of our cultural events.\nStep 2: Attend an orientation and choose your focus area (dance, drama, folk arts).\nStep 3: Participate in rehearsals and training sessions.\nStep 4: Perform at our monthly cultural showcase.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Best Cultural Program at National Fest"
+      },
+      {
+        "image": null,
+        "caption": "Annual Onam Celebration with 3000+ audience"
+      },
+      {
+        "image": null,
+        "caption": "Cultural Exchange with 5 universities"
+      }
+    ]
+  },
+  {
+    "id": "seed_008",
+    "name": "AI Research Group",
+    "category": "ai",
+    "logo": null,
+    "clubHead": "Prof. Suresh Babu",
+    "contact": "+91 21098 76543",
+    "mission": "To explore and advance the frontiers of artificial intelligence through research projects, paper reading groups, and collaborative experiments in machine learning and deep learning.",
+    "about": "To establish Amrita as a hub for AI research and innovation, producing groundbreaking work that impacts society positively.",
+    "joiningProcedure": "Step 1: Complete the prerequisite online course on ML fundamentals.\nStep 2: Submit a brief research interest statement.\nStep 3: Join a research reading group.\nStep 4: Propose or join an ongoing project.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "10+ papers published in top AI conferences"
+      },
+      {
+        "image": null,
+        "caption": "Winner at Smart India Hackathon AI Track"
+      },
+      {
+        "image": null,
+        "caption": "Industry-sponsored AI Lab setup"
+      }
+    ]
+  },
+  {
+    "id": "seed_009",
+    "name": "Amrita Media Club",
+    "category": "media",
+    "logo": null,
+    "clubHead": "Ms. Divya Ramachandran",
+    "contact": "+91 10987 65432",
+    "mission": "To train students in journalism, content creation, photography, and videography while documenting campus life and producing high-quality media content.",
+    "about": "To create a professional media ecosystem on campus that nurtures future journalists, filmmakers, and content creators.",
+    "joiningProcedure": "Step 1: Submit a sample work (article, photo, or video).\nStep 2: Attend the media workshop series.\nStep 3: Get assigned to a content team (print, digital, or broadcast).\nStep 4: Complete your first assignment.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Campus Magazine with 5000+ readers"
+      },
+      {
+        "image": null,
+        "caption": "Best University Media Award"
+      },
+      {
+        "image": null,
+        "caption": "Documentary screened at film festival"
+      }
+    ]
+  },
+  {
+    "id": "seed_010",
+    "name": "Seva Sangha",
+    "category": "community",
+    "logo": null,
+    "clubHead": "Dr. Hari Krishnan",
+    "contact": "+91 98712 34567",
+    "mission": "To instill the spirit of selfless service among students by organizing community outreach programs, environmental campaigns, and social welfare initiatives.",
+    "about": "To build a generation of socially conscious leaders who actively contribute to the betterment of underprivileged communities.",
+    "joiningProcedure": "Step 1: Attend our monthly community service event.\nStep 2: Sign up as a volunteer.\nStep 3: Complete 10 hours of community service.\nStep 4: Become a core member and lead initiatives.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Planted 10,000 trees in rural areas"
+      },
+      {
+        "image": null,
+        "caption": "Taught 500+ underprivileged children"
+      },
+      {
+        "image": null,
+        "caption": "National Service Award recipients"
+      }
+    ]
+  },
+  {
+    "id": "seed_011",
+    "name": "Mudhalir Music Club",
+    "category": "music",
+    "logo": null,
+    "clubHead": "Mr. Karthik Subramanian",
+    "contact": "+91 87612 34567",
+    "mission": "To bring together musicians of all genres and skill levels, fostering collaboration and providing a platform for original compositions and performances.",
+    "about": "To create a thriving contemporary music scene on campus where students can discover, create, and share music freely.",
+    "joiningProcedure": "Step 1: Show up to our jam sessions every Friday.\nStep 2: Play or sing at open mic night.\nStep 3: Register as a member.\nStep 4: Join a band or start your own!",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Battle of the Bands champions"
+      },
+      {
+        "image": null,
+        "caption": "Released campus music album"
+      },
+      {
+        "image": null,
+        "caption": "Opened for professional bands at fest"
+      }
+    ]
+  },
+  {
+    "id": "seed_012",
+    "name": "Cromptre Arts Club",
+    "category": "arts",
+    "logo": null,
+    "clubHead": "Ms. Sneha Rajan",
+    "contact": "+91 76512 34567",
+    "mission": "To explore digital arts, graphic design, and multimedia creation, equipping students with industry-standard creative tools and techniques.",
+    "about": "To bridge the gap between traditional artistry and modern digital creativity, producing designers who can lead in the creative industry.",
+    "joiningProcedure": "Step 1: Attend our design bootcamp.\nStep 2: Complete a mini design challenge.\nStep 3: Join our Adobe/Figma workspace.\nStep 4: Collaborate on a real project.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Designed branding for 20+ campus events"
+      },
+      {
+        "image": null,
+        "caption": "Winners at National Design Competition"
+      },
+      {
+        "image": null,
+        "caption": "Students placed at top design firms"
+      }
+    ]
+  },
+  {
+    "id": "seed_013",
+    "name": "Science Research Forum",
+    "category": "science",
+    "logo": null,
+    "clubHead": "Dr. Venkatesh Iyer",
+    "contact": "+91 65412 34567",
+    "mission": "To nurture scientific curiosity and research aptitude among undergraduate students through experiments, seminars, and collaborative research projects.",
+    "about": "To create a culture of scientific inquiry where every student has the opportunity to contribute to meaningful research.",
+    "joiningProcedure": "Step 1: Attend our monthly science seminar.\nStep 2: Express interest in a research area.\nStep 3: Get paired with a faculty mentor.\nStep 4: Begin your research project.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "25+ papers in peer-reviewed journals"
+      },
+      {
+        "image": null,
+        "caption": "National Science Day best exhibit"
+      },
+      {
+        "image": null,
+        "caption": "3 patents filed by student teams"
+      }
+    ]
+  },
+  {
+    "id": "seed_014",
+    "name": "Literary Society",
+    "category": "literary",
+    "logo": null,
+    "clubHead": "Prof. Kavitha Menon",
+    "contact": "+91 54312 34567",
+    "mission": "To cultivate the art of eloquent expression through debates, creative writing, poetry slams, and literary discussions that sharpen critical thinking.",
+    "about": "To produce confident communicators and thoughtful writers who can articulate ideas powerfully in any arena.",
+    "joiningProcedure": "Step 1: Attend a debate or writing workshop.\nStep 2: Submit a writing sample or participate in a debate.\nStep 3: Join our weekly literary circle.\nStep 4: Represent the club at inter-college events.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "Won 12 inter-university debate trophies"
+      },
+      {
+        "image": null,
+        "caption": "Published student literary magazine"
+      },
+      {
+        "image": null,
+        "caption": "MUN Best Delegate awards"
+      }
+    ]
+  },
+  {
+    "id": "seed_015",
+    "name": "E-Cell Amrita",
+    "category": "entrepreneurship",
+    "logo": null,
+    "clubHead": "Mr. Ashwin Menon",
+    "contact": "+91 43212 34567",
+    "mission": "To foster an entrepreneurial mindset among students by providing mentorship, funding connections, and hands-on startup experience through incubation programs.",
+    "about": "To make Amrita a launchpad for successful student startups that create jobs and solve real-world problems.",
+    "joiningProcedure": "Step 1: Attend our startup bootcamp.\nStep 2: Pitch a business idea (solo or team).\nStep 3: Get matched with a mentor.\nStep 4: Join the incubation program.",
+    "achievements": [
+      {
+        "image": null,
+        "caption": "5 student startups received funding"
+      },
+      {
+        "image": null,
+        "caption": "Hosted Startup Weekend with 300+ attendees"
+      },
+      {
+        "image": null,
+        "caption": "Alumni startup valued at 50 Crore"
+      }
+    ]
+  }
+];
 }
 
-function handleGithubSubmit(e) {
-    e.preventDefault();
-    githubConfig = {
-        username: document.getElementById('gh-username').value.trim(),
-        repo: document.getElementById('gh-repo').value.trim(),
-        token: document.getElementById('gh-token').value.trim(),
-        branch: 'main'
-    };
-    localStorage.setItem('amrita_github_config', JSON.stringify(githubConfig));
-    closeModal('github-modal');
-    showToast('GitHub configuration saved securely.', 'success');
-}
 
-async function pushToGitHub(updatedClubs) {
-    if (!githubConfig || !githubConfig.token) return;
-    
-    const { username, repo, token, branch } = githubConfig;
-    const path = 'data.json';
-    const apiUrl = \https://api.github.com/repos/\/\/contents/\\;
-    
-    showToast('Syncing changes to GitHub...', 'info');
-    
-    try {
-        // 1. Get current file SHA
-        const getRes = await fetch(\\?ref=\\, {
-            headers: { 'Authorization': \	oken \\ }
-        });
-        
-        let sha = null;
-        if (getRes.ok) {
-            const getJson = await getRes.json();
-            sha = getJson.sha;
-        }
-        
-        // 2. Encode to Base64 safely
-        const contentStr = JSON.stringify(updatedClubs, null, 2);
-        const base64Content = window.btoa(unescape(encodeURIComponent(contentStr)));
-        
-        // 3. Commit
-        const putRes = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-                'Authorization': \	oken \\,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: \Admin Update: \\,
-                content: base64Content,
-                sha: sha,
-                branch: branch
-            })
-        });
-        
-        if (!putRes.ok) throw new Error('Commit failed');
-        showToast('Successfully synced to GitHub Repo!', 'success');
-    } catch (error) {
-        console.error('GitHub Sync Error:', error);
-        showToast('Failed to sync to GitHub. Check token and repo details.', 'error');
-    }
-}
+
+
+

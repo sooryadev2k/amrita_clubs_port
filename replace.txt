@@ -1,0 +1,10 @@
+﻿function loadClubs() {
+    const stored = localStorage.getItem('amrita_clubs');
+    if (stored) {
+        clubs = JSON.parse(stored);
+    } else {
+        clubs = getSeedClubs();
+        saveClubs();
+    }
+    updateStats();
+}
