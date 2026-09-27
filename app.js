@@ -560,12 +560,6 @@ function showClubDetail(id) {
                         <span class="detail-category-badge">
                             <i class="${cat.icon}"></i> ${cat.name}
                         </span>
-                        <span class="detail-meta-item">
-                            <i class="fas fa-user-tie"></i> ${formatClubHeadsInline(club.clubHead)}
-                        </span>
-                        <span class="detail-meta-item">
-                            <i class="fas fa-phone"></i> ${escapeHTML(club.contact)}
-                        </span>
                     </div>
                 </div>
             </div>
