@@ -608,7 +608,7 @@ function showClubDetail(id) {
                     </div>
                     <div class="detail-contact-item">
                         <i class="fas fa-phone-alt"></i>
-                        <span><strong>Phone:</strong> ${escapeHTML(club.contact)}</span>
+                        <span><strong>Contact:</strong> ${escapeHTML(club.contact)}</span>
                     </div>
                     <div class="detail-contact-item">
                         <i class="fas fa-layer-group"></i>
