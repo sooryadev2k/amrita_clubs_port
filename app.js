@@ -1,4 +1,17 @@
-﻿/* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
+﻿const firebaseConfig = {
+  apiKey: "AIzaSyBbV8d7VjImRi5ZQQWdOaM1j-BG6G31pBo",
+  authDomain: "amrita-clubs-portal.firebaseapp.com",
+  projectId: "amrita-clubs-portal",
+  storageBucket: "amrita-clubs-portal.firebasestorage.app",
+  messagingSenderId: "869059215334",
+  appId: "1:869059215334:web:cc22ae633346c5c98e2027",
+  measurementId: "G-3RR14KC6VK"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+/* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
 
 // ===== CONSTANTS =====
 const ADMIN_USERS = {
@@ -36,9 +49,9 @@ let customAdminPasswords = {}; // { 'a1': '...', 'a2': '...' }
 let customSubAdminPasswords = {}; // { 'club_id': '...' }
 
 // ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
-        loadClubs();
+        await loadClubs();
         loadCustomPasswords();
         generateAchievementSlots();
         handleRoute();
@@ -56,16 +69,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function loadClubs() {
-    const stored = localStorage.getItem('amrita_clubs');
-    if (stored) {
-        clubs = JSON.parse(stored);
-    } else {
-        clubs = getSeedClubs();
-        saveClubs();
+async function loadClubs() {
+    try {
+        const snapshot = await db.collection('clubs').get();
+        if (snapshot.empty) {
+            clubs = typeof getSeedClubs === 'function' ? getSeedClubs() : [];
+            for (let c of clubs) {
+                await db.collection('clubs').doc(c.id).set(c);
+            }
+        } else {
+            clubs = [];
+            snapshot.forEach(doc => clubs.push(doc.data()));
+        }
+    } catch (e) {
+        console.error("Firebase Error:", e);
+        const stored = localStorage.getItem('amrita_clubs');
+        clubs = stored ? JSON.parse(stored) : (typeof getSeedClubs === 'function' ? getSeedClubs() : []);
     }
     updateStats();
+    renderCategoryFilters();
+    renderClubsGrid();
+    renderAdminTable();
 }
+
+function saveClubs() {
+    localStorage.setItem('amrita_clubs', JSON.stringify(clubs));
+    updateStats();
+}
+
 
 
 function saveClubs() {
@@ -792,173 +823,81 @@ function resetClubForm() {
     }
 }
 
-function handleClubSubmit(e) {
+async function handleClubSubmit(e) {
     e.preventDefault();
 
-    const editId = document.getElementById('club-edit-id').value;
-    const isEdit = !!editId;
-
-    // Check permissions
-    const canEdit = currentAdmin === 'a1' || (currentAdmin === 'sub' && subAdminClubId === editId);
-    if (isEdit && !canEdit) {
-        showToast('You do not have permission to edit this club', 'error');
-        return;
-    }
-    if (!isEdit && currentAdmin === 'sub') {
+    if (currentAdmin === 'sub' && !isEdit) {
         showToast('Sub-admins cannot add new clubs', 'error');
         return;
     }
 
-    const clubData = {
-        id: isEdit ? editId : generateId(),
-        name: document.getElementById('club-name').value.trim(),
-        category: document.getElementById('club-category').value,
-        logo: tempLogo,
-        clubHead: document.getElementById('club-head').value.trim(),
-        contact: document.getElementById('club-contact').value.trim(),
-        mission: document.getElementById('club-mission').value.trim(),
-        about: document.getElementById('club-about').value.trim(),
-        joiningProcedure: document.getElementById('club-joining').value.trim(),
-        achievements: Array.from({ length: MAX_ACHIEVEMENTS }, (_, i) => ({
-            image: tempAchievements[i],
-            caption: document.getElementById(`ach-caption-${i}`).value.trim()
-        }))
-    };
+    const submitBtn = document.querySelector('#club-form button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
 
-    if (isEdit) {
-        const index = clubs.findIndex(c => c.id === editId);
-        if (index !== -1) {
+    try {
+        const clubId = isEdit ? editId : generateId();
+
+        // Upload Logo
+        let finalLogo = tempLogo;
+        if (tempLogo && tempLogo.startsWith('data:')) {
+            const logoRef = storage.ref(\logos/\_\\);
+            await logoRef.putString(tempLogo, 'data_url');
+            finalLogo = await logoRef.getDownloadURL();
+        }
+
+        // Upload Achievements
+        const achievementsList = [];
+        for (let i = 0; i < MAX_ACHIEVEMENTS; i++) {
+            let img = tempAchievements[i];
+            const caption = document.getElementById(\ch-caption-\\).value.trim();
+            if (img && img.startsWith('data:')) {
+                const achRef = storage.ref(\chievements/\_\_\\);
+                await achRef.putString(img, 'data_url');
+                img = await achRef.getDownloadURL();
+            }
+            achievementsList.push({ image: img, caption: caption });
+        }
+
+        const clubData = {
+            id: clubId,
+            name: document.getElementById('club-name').value.trim(),
+            category: document.getElementById('club-category').value,
+            logo: finalLogo,
+            clubHead: document.getElementById('club-head').value.trim(),
+            contact: document.getElementById('club-contact').value.trim(),
+            mission: document.getElementById('club-mission').value.trim(),
+            about: document.getElementById('club-about').value.trim(),
+            joiningProcedure: document.getElementById('club-joining').value.trim(),
+            achievements: achievementsList
+        };
+
+        await db.collection('clubs').doc(clubId).set(clubData);
+
+        if (isEdit) {
+            const index = clubs.findIndex(c => c.id === editId);
             clubs[index] = clubData;
             showToast('Club updated successfully!', 'success');
+        } else {
+            clubs.push(clubData);
+            showToast('Club added successfully!', 'success');
         }
-    } else {
-        clubs.push(clubData);
-        showToast('Club added successfully!', 'success');
+
+        saveClubs();
+        closeClubModal();
+        renderAdminTable();
+        renderClubsGrid();
+    } catch(err) {
+        console.error(err);
+        showToast('Error saving club', 'error');
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
-
-    saveClubs();
-    closeClubModal();
-    renderAdminTable();
-    renderClubsGrid();
 }
 
-// ===== DELETE =====
-function openDeleteModal(id) {
-    if (currentAdmin !== 'a1') {
-        showToast('You do not have permission to delete clubs', 'error');
-        return;
-    }
 
-    const club = clubs.find(c => c.id === id);
-    if (!club) return;
-
-    deleteTargetId = id;
-    document.getElementById('delete-club-name').textContent = club.name;
-    document.getElementById('delete-modal').classList.add('show');
-}
-
-function closeDeleteModal() {
-    document.getElementById('delete-modal').classList.remove('show');
-    deleteTargetId = null;
-}
-
-function confirmDelete() {
-    if (!deleteTargetId || currentAdmin !== 'a1') return;
-
-    clubs = clubs.filter(c => c.id !== deleteTargetId);
-    saveClubs();
-    closeDeleteModal();
-    renderAdminTable();
-    renderClubsGrid();
-    showToast('Club deleted successfully', 'success');
-}
-
-// ===== DYNAMIC ACHIEVEMENT SLOTS =====
-function generateAchievementSlots() {
-    const uploadGrid = document.getElementById('achievements-upload-grid');
-    const captionsGrid = document.getElementById('ach-captions-grid');
-    if (!uploadGrid || !captionsGrid) return;
-
-    let slotsHTML = '';
-    let captionsHTML = '';
-    for (let i = 0; i < MAX_ACHIEVEMENTS; i++) {
-        slotsHTML += `
-            <div class="achievement-slot" id="ach-slot-${i}" onclick="document.getElementById('ach-file-${i}').click()">
-                <input type="file" id="ach-file-${i}" accept="image/*" onchange="handleAchievementUpload(event, ${i})" hidden>
-                <div class="ach-placeholder" id="ach-placeholder-${i}">
-                    <i class="fas fa-plus"></i>
-                </div>
-                <img id="ach-preview-${i}" class="ach-preview hidden" alt="Achievement ${i + 1}">
-            </div>`;
-        captionsHTML += `<input type="text" id="ach-caption-${i}" placeholder="Caption ${i + 1}" class="ach-caption-input">`;
-    }
-    uploadGrid.innerHTML = slotsHTML;
-    captionsGrid.innerHTML = captionsHTML;
-}
-
-// ===== FILE UPLOADS =====
-function handleLogoUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-        showToast('Logo file must be under 2MB', 'warning');
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        tempLogo = e.target.result;
-        const preview = document.getElementById('logo-preview');
-        preview.src = tempLogo;
-        preview.classList.remove('hidden');
-        document.getElementById('logo-placeholder').classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
-}
-
-function handleAchievementUpload(event, index) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-        showToast('Image file must be under 2MB', 'warning');
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        tempAchievements[index] = e.target.result;
-        const preview = document.getElementById(`ach-preview-${index}`);
-        preview.src = tempAchievements[index];
-        preview.classList.remove('hidden');
-        document.getElementById(`ach-placeholder-${index}`).classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
-}
-
-// ===== TOAST NOTIFICATIONS =====
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-times-circle',
-        warning: 'fas fa-exclamation-triangle',
-        info: 'fas fa-info-circle'
-    };
-
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<i class="${icons[type]}"></i> ${message}`;
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.classList.add('toast-exit');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// ===== UTILITIES =====
 function generateId() {
     return 'club_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 }
@@ -1628,6 +1567,11 @@ function getSeedClubs() {
   }
 ];
 }
+
+
+
+
+
 
 
 

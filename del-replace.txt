@@ -1,0 +1,16 @@
+﻿async function deleteClub() {
+    if (!deleteTargetId || currentAdmin !== 'a1') return;
+    
+    try {
+        await db.collection('clubs').doc(deleteTargetId).delete();
+        clubs = clubs.filter(c => c.id !== deleteTargetId);
+        saveClubs();
+        closeDeleteModal();
+        renderAdminTable();
+        renderClubsGrid();
+        showToast('Club deleted successfully', 'success');
+    } catch(e) {
+        console.error(e);
+        showToast('Error deleting club', 'error');
+    }
+}

@@ -1,0 +1,73 @@
+﻿async function handleClubSubmit(e) {
+    e.preventDefault();
+
+    if (currentAdmin === 'sub' && !isEdit) {
+        showToast('Sub-admins cannot add new clubs', 'error');
+        return;
+    }
+
+    const submitBtn = document.querySelector('#club-form button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
+
+    try {
+        const clubId = isEdit ? editId : generateId();
+
+        // Upload Logo
+        let finalLogo = tempLogo;
+        if (tempLogo && tempLogo.startsWith('data:')) {
+            const logoRef = storage.ref(\logos/\_\\);
+            await logoRef.putString(tempLogo, 'data_url');
+            finalLogo = await logoRef.getDownloadURL();
+        }
+
+        // Upload Achievements
+        const achievementsList = [];
+        for (let i = 0; i < MAX_ACHIEVEMENTS; i++) {
+            let img = tempAchievements[i];
+            const caption = document.getElementById(\ch-caption-\\).value.trim();
+            if (img && img.startsWith('data:')) {
+                const achRef = storage.ref(\chievements/\_\_\\);
+                await achRef.putString(img, 'data_url');
+                img = await achRef.getDownloadURL();
+            }
+            achievementsList.push({ image: img, caption: caption });
+        }
+
+        const clubData = {
+            id: clubId,
+            name: document.getElementById('club-name').value.trim(),
+            category: document.getElementById('club-category').value,
+            logo: finalLogo,
+            clubHead: document.getElementById('club-head').value.trim(),
+            contact: document.getElementById('club-contact').value.trim(),
+            mission: document.getElementById('club-mission').value.trim(),
+            about: document.getElementById('club-about').value.trim(),
+            joiningProcedure: document.getElementById('club-joining').value.trim(),
+            achievements: achievementsList
+        };
+
+        await db.collection('clubs').doc(clubId).set(clubData);
+
+        if (isEdit) {
+            const index = clubs.findIndex(c => c.id === editId);
+            clubs[index] = clubData;
+            showToast('Club updated successfully!', 'success');
+        } else {
+            clubs.push(clubData);
+            showToast('Club added successfully!', 'success');
+        }
+
+        saveClubs();
+        closeClubModal();
+        renderAdminTable();
+        renderClubsGrid();
+    } catch(err) {
+        console.error(err);
+        showToast('Error saving club', 'error');
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
