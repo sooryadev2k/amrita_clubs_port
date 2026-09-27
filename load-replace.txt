@@ -2,26 +2,29 @@
     try {
         const snapshot = await db.collection('clubs').get();
         if (snapshot.empty) {
-            clubs = typeof getSeedClubs === 'function' ? getSeedClubs() : [];
+            console.log("Firestore is empty. Seeding dummy clubs...");
+            clubs = getSeedClubs();
             for (let c of clubs) {
-                await db.collection('clubs').doc(c.id).set(c);
+                try {
+                    await db.collection('clubs').doc(c.id).set(c);
+                } catch(err) {
+                    console.warn("Could not save to Firestore (check rules):", err.message);
+                }
             }
         } else {
             clubs = [];
             snapshot.forEach(doc => clubs.push(doc.data()));
         }
     } catch (e) {
-        console.error("Firebase Error:", e);
+        console.error("Firebase Error (falling back to local):", e.message);
         const stored = localStorage.getItem('amrita_clubs');
-        clubs = stored ? JSON.parse(stored) : (typeof getSeedClubs === 'function' ? getSeedClubs() : []);
+        clubs = stored ? JSON.parse(stored) : [];
+        if (clubs.length === 0) {
+            clubs = getSeedClubs();
+        }
     }
     updateStats();
     renderCategoryFilters();
     renderClubsGrid();
     renderAdminTable();
-}
-
-function saveClubs() {
-    localStorage.setItem('amrita_clubs', JSON.stringify(clubs));
-    updateStats();
 }
