@@ -36,9 +36,9 @@ let customAdminPasswords = {}; // { 'a1': '...', 'a2': '...' }
 let customSubAdminPasswords = {}; // { 'club_id': '...' }
 
 // ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
-        loadClubs();
+        await loadClubs();
         loadCustomPasswords();
         generateAchievementSlots();
         handleRoute();
@@ -56,13 +56,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function loadClubs() {
-    const stored = localStorage.getItem('amrita_clubs');
-    if (stored) {
-        clubs = JSON.parse(stored);
-    } else {
-        clubs = getSeedClubs();
-        saveClubs();
+async function loadClubs() {
+    try {
+        const response = await fetch('data.json?t=' + new Date().getTime());
+        if (response.ok) {
+            clubs = await response.json();
+            // Optional: still cache locally in case of offline reload
+            localStorage.setItem('amrita_clubs', JSON.stringify(clubs));
+        } else {
+            throw new Error('Fetch failed');
+        }
+    } catch (e) {
+        console.warn('Failed to load data.json, falling back to local storage', e);
+        const stored = localStorage.getItem('amrita_clubs');
+        if (stored) {
+            clubs = JSON.parse(stored);
+        } else {
+            // Ultimate fallback
+            if (typeof getSeedClubs === 'function') clubs = getSeedClubs();
+        }
     }
     updateStats();
 }
@@ -636,13 +648,22 @@ function renderAdminTable(searchQuery = '') {
         badge.className = 'admin-badge limited';
     }
 
-    // Show/hide add button â€” sub-admins cannot add
+    // Show/hide add button Ã¢â‚¬â€ sub-admins cannot add
     const addBtn = document.getElementById('admin-add-btn');
     if (addBtn) {
         if (currentAdmin === 'sub') {
             addBtn.classList.add('hidden');
         } else {
             addBtn.classList.remove('hidden');
+        }
+    }
+
+    const ghBtn = document.getElementById('admin-github-btn');
+    if (ghBtn) {
+        if (currentAdmin === 'a1') {
+            ghBtn.classList.remove('hidden');
+        } else {
+            ghBtn.classList.add('hidden');
         }
     }
 
@@ -836,6 +857,7 @@ function handleClubSubmit(e) {
     }
 
     saveClubs();
+    pushToGitHub(clubs);
     closeClubModal();
     renderAdminTable();
     renderClubsGrid();
@@ -866,6 +888,7 @@ function confirmDelete() {
 
     clubs = clubs.filter(c => c.id !== deleteTargetId);
     saveClubs();
+    pushToGitHub(clubs);
     closeDeleteModal();
     renderAdminTable();
     renderClubsGrid();
@@ -991,7 +1014,7 @@ function formatContact(str) {
     return safeStr;
 }
 
-// ===== SEED DATA =====
+
 function getSeedClubs() {
     return [
         {
@@ -1239,3 +1262,75 @@ function getSeedClubs() {
     ];
 }
 
+// ===== GITHUB INTEGRATION =====
+let githubConfig = JSON.parse(localStorage.getItem('amrita_github_config')) || null;
+
+function openGitHubModal() {
+    document.getElementById('github-modal').classList.add('show');
+    if (githubConfig) {
+        document.getElementById('gh-username').value = githubConfig.username || '';
+        document.getElementById('gh-repo').value = githubConfig.repo || '';
+        document.getElementById('gh-token').value = githubConfig.token || '';
+    }
+}
+
+function handleGithubSubmit(e) {
+    e.preventDefault();
+    githubConfig = {
+        username: document.getElementById('gh-username').value.trim(),
+        repo: document.getElementById('gh-repo').value.trim(),
+        token: document.getElementById('gh-token').value.trim(),
+        branch: 'main'
+    };
+    localStorage.setItem('amrita_github_config', JSON.stringify(githubConfig));
+    closeModal('github-modal');
+    showToast('GitHub configuration saved securely.', 'success');
+}
+
+async function pushToGitHub(updatedClubs) {
+    if (!githubConfig || !githubConfig.token) return;
+    
+    const { username, repo, token, branch } = githubConfig;
+    const path = 'data.json';
+    const apiUrl = \https://api.github.com/repos/\/\/contents/\\;
+    
+    showToast('Syncing changes to GitHub...', 'info');
+    
+    try {
+        // 1. Get current file SHA
+        const getRes = await fetch(\\?ref=\\, {
+            headers: { 'Authorization': \	oken \\ }
+        });
+        
+        let sha = null;
+        if (getRes.ok) {
+            const getJson = await getRes.json();
+            sha = getJson.sha;
+        }
+        
+        // 2. Encode to Base64 safely
+        const contentStr = JSON.stringify(updatedClubs, null, 2);
+        const base64Content = window.btoa(unescape(encodeURIComponent(contentStr)));
+        
+        // 3. Commit
+        const putRes = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': \	oken \\,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: \Admin Update: \\,
+                content: base64Content,
+                sha: sha,
+                branch: branch
+            })
+        });
+        
+        if (!putRes.ok) throw new Error('Commit failed');
+        showToast('Successfully synced to GitHub Repo!', 'success');
+    } catch (error) {
+        console.error('GitHub Sync Error:', error);
+        showToast('Failed to sync to GitHub. Check token and repo details.', 'error');
+    }
+}

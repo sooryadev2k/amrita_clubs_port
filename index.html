@@ -186,6 +186,36 @@
             </div>
         </div>
     </div>
+    <!-- ===== GITHUB SETUP MODAL ===== -->
+    <div class="modal-overlay" id="github-modal">
+        <div class="modal login-modal-content">
+            <button class="modal-close" onclick="closeModal('github-modal')"><i class="fas fa-times"></i></button>
+            <div class="login-header">
+                <div class="login-icon"><i class="fab fa-github"></i></div>
+                <h2>GitHub Sync Setup</h2>
+                <p>Configure repo settings to push changes live.</p>
+            </div>
+            <form id="github-form" onsubmit="handleGithubSubmit(event)">
+                <div class="form-group">
+                    <label for="gh-username"><i class="fas fa-user"></i> GitHub Username</label>
+                    <input type="text" id="gh-username" placeholder="e.g. sooryadev2k" required>
+                </div>
+                <div class="form-group">
+                    <label for="gh-repo"><i class="fas fa-code-branch"></i> Repository Name</label>
+                    <input type="text" id="gh-repo" placeholder="e.g. amrita_clubs_port" required>
+                </div>
+                <div class="form-group">
+                    <label for="gh-token"><i class="fas fa-key"></i> Personal Access Token (PAT)</label>
+                    <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" required>
+                    <small style="display:block; margin-top:5px; color:#666;">Token needs 'repo' scope. It is stored securely in your browser.</small>
+                </div>
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary btn-full"><i class="fas fa-save"></i> Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ===== CHANGE PASSWORD MODAL ===== -->
     <div class="modal-overlay" id="change-password-modal">
         <div class="modal login-modal-content">
@@ -367,6 +397,9 @@
                         <span class="admin-badge" id="admin-role-badge">Full Access</span>
                     </div>
                     <div class="admin-header-actions">
+                        <button class="btn btn-secondary" id="admin-github-btn" onclick="openGitHubModal()">
+                            <i class="fab fa-github"></i> GitHub Sync
+                        </button>
                         <button class="btn btn-secondary" id="admin-change-pass-btn" onclick="openChangePasswordModal()">
                             <i class="fas fa-key"></i> Change Password
                         </button>
