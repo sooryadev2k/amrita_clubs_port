@@ -494,7 +494,7 @@ function renderClubsGrid() {
                     </div>
                     <div class="club-card-footer">
                         <div class="club-card-contact">
-                            <i class="fas fa-phone"></i> ${escapeHTML(club.contact)}
+                            <i class="fas fa-phone"></i> ${formatContact(club.contact)}
                         </div>
                         <div class="club-card-arrow">
                             <i class="fas fa-arrow-right"></i>
@@ -602,7 +602,7 @@ function showClubDetail(id) {
                     </div>
                     <div class="detail-contact-item">
                         <i class="fas fa-phone-alt"></i>
-                        <span><strong>Contact:</strong> ${escapeHTML(club.contact)}</span>
+                        <span><strong>Contact:</strong> ${formatContact(club.contact)}</span>
                     </div>
                     <div class="detail-contact-item">
                         <i class="fas fa-layer-group"></i>
@@ -691,7 +691,7 @@ function renderAdminTable(searchQuery = '') {
                 <td><strong>${escapeHTML(club.name)}</strong></td>
                 <td><span class="category-badge"><i class="${cat.icon}"></i> ${cat.name}</span></td>
                 <td>${formatClubHeadsInline(club.clubHead)}</td>
-                <td>${escapeHTML(club.contact)}</td>
+                <td>${formatContact(club.contact)}</td>
                 <td>
                     <div class="admin-actions">
                         <button class="admin-action-btn view" title="View" onclick="navigateToClub('${club.id}')"><i class="fas fa-eye"></i></button>
@@ -982,23 +982,34 @@ function formatClubHeadsInline(str) {
     return names.map(n => escapeHTML(n)).join(', ');
 }
 
+function formatContact(str) {
+    if (!str) return '';
+    const safeStr = escapeHTML(str);
+    if (str.startsWith('http://') || str.startsWith('https://')) {
+        return `<a href="${safeStr}" target="_blank" rel="noopener noreferrer" class="contact-link">Link <i class="fas fa-external-link-alt"></i></a>`;
+    }
+    return safeStr;
+}
+
 // ===== SEED DATA =====
 function getSeedClubs() {
     return [
         {
             id: 'seed_001',
-            name: 'Amrita Robotics Club',
-            category: 'ai',
+            name: 'ASME',
+            category: 'tech',
             logo: null,
-            clubHead: 'Dr. Rajesh Kannan',
-            contact: '+91 98765 43210',
-            mission: 'To inspire innovation and foster practical skills in robotics. We provide a platform for students to compete, collaborate, and excel in the field of robotics and automation.',
-            about: 'To be a leading center for robotic development and a hub for tech excellence at Amrita, empowering students to shape the future of automation.',
-            joiningProcedure: 'Step 1: Fill out the online application form on the club portal.\nStep 2: Attend the orientation session held at the beginning of each semester.\nStep 3: Complete a basic robotics aptitude assessment.\nStep 4: Receive your membership confirmation via email.',
+            clubHead: 'Dr. Karthik V Shankar (Faculty Co-ordinator), Karthik (Chairperson), Dhwaneel (Vice Chair), Gautham (Secretary), Anusree Giridhar (Treasurer), Adisheshan (Media Head), Archana (WIE Chair), Shyamini (WIE Vice Chair), Adithya (WIE Secretary), Anjitha (WIE Joint Secretary), Niranjana & Anusree (WIE Event Heads)',
+            contact: 'https://www.instagram.com/asme.avv.amritapuri?igsh=MTF1NzRreW03OXUyeg==',
+            mission: 'To advance engineering for the benefit of humanity by inspiring, educating, and convening engineers to improve quality of life globally.',
+            about: 'ASME (American Society of Mechanical Engineers) currently has 3 factions under it which are Air Squad, Sim Forge and WIE. We currently have 3 ongoing projects Air Squad which are robowar, turtle bot and eHPVC.',
+            joiningProcedure: 'Interview based on the given study material',
             achievements: [
-                { image: null, caption: 'Amrita Robotics Competition Winners 2024' },
-                { image: null, caption: 'National Robotics Championship Finalists' },
-                { image: null, caption: 'Best Innovation Award at TechFest' }
+                { image: null, caption: 'Won the distinguished section award in 2025' },
+                { image: null, caption: 'First ASME student chapter to establish a WIE' },
+                { image: null, caption: '1st year members selected for semi-final round in AMECE Hyderabad' },
+                { image: null, caption: '2nd year members won honorable mention in MAHE Mobility Challenge' },
+                { image: null, caption: '2nd year members won runners up in Srishti National Level Hackathon' }
             ]
         },
         {
