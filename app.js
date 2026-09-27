@@ -1,4 +1,4 @@
-/* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
+﻿/* ===== AMRITA STUDENT CLUBS PORTAL - APP.JS ===== */
 
 // ===== CONSTANTS =====
 const ADMIN_USERS = {
@@ -573,19 +573,19 @@ function showClubDetail(id) {
 
         <div class="club-detail-body">
             <div class="detail-cards-grid">
+                <div class="detail-card about">
+                    <div class="detail-card-header">
+                        <div class="detail-card-icon"><i class="fas fa-info-circle"></i></div>
+                        <h3>About Club</h3>
+                    </div>
+                    <p>${escapeHTML(club.about || '')}</p>
+                </div>
                 <div class="detail-card mission">
                     <div class="detail-card-header">
                         <div class="detail-card-icon"><i class="fas fa-bullseye"></i></div>
                         <h3>Mission</h3>
                     </div>
                     <p>${escapeHTML(club.mission)}</p>
-                </div>
-                <div class="detail-card vision">
-                    <div class="detail-card-header">
-                        <div class="detail-card-icon"><i class="fas fa-eye"></i></div>
-                        <h3>Vision</h3>
-                    </div>
-                    <p>${escapeHTML(club.vision)}</p>
                 </div>
             </div>
 
@@ -639,7 +639,7 @@ function renderAdminTable(searchQuery = '') {
         badge.className = 'admin-badge limited';
     }
 
-    // Show/hide add button — sub-admins cannot add
+    // Show/hide add button â€” sub-admins cannot add
     const addBtn = document.getElementById('admin-add-btn');
     if (addBtn) {
         if (currentAdmin === 'sub') {
@@ -739,7 +739,7 @@ function openEditClubModal(id) {
     document.getElementById('club-head').value = club.clubHead;
     document.getElementById('club-contact').value = club.contact;
     document.getElementById('club-mission').value = club.mission;
-    document.getElementById('club-vision').value = club.vision;
+    document.getElementById('club-about').value = club.about || '';
     document.getElementById('club-joining').value = club.joiningProcedure;
 
     // Logo
@@ -819,7 +819,7 @@ function handleClubSubmit(e) {
         clubHead: document.getElementById('club-head').value.trim(),
         contact: document.getElementById('club-contact').value.trim(),
         mission: document.getElementById('club-mission').value.trim(),
-        vision: document.getElementById('club-vision').value.trim(),
+        about: document.getElementById('club-about').value.trim(),
         joiningProcedure: document.getElementById('club-joining').value.trim(),
         achievements: Array.from({ length: MAX_ACHIEVEMENTS }, (_, i) => ({
             image: tempAchievements[i],
@@ -983,7 +983,7 @@ function getSeedClubs() {
             clubHead: 'Dr. Rajesh Kannan',
             contact: '+91 98765 43210',
             mission: 'To inspire innovation and foster practical skills in robotics. We provide a platform for students to compete, collaborate, and excel in the field of robotics and automation.',
-            vision: 'To be a leading center for robotic development and a hub for tech excellence at Amrita, empowering students to shape the future of automation.',
+            about: 'To be a leading center for robotic development and a hub for tech excellence at Amrita, empowering students to shape the future of automation.',
             joiningProcedure: 'Step 1: Fill out the online application form on the club portal.\nStep 2: Attend the orientation session held at the beginning of each semester.\nStep 3: Complete a basic robotics aptitude assessment.\nStep 4: Receive your membership confirmation via email.',
             achievements: [
                 { image: null, caption: 'Amrita Robotics Competition Winners 2024' },
@@ -999,7 +999,7 @@ function getSeedClubs() {
             clubHead: 'Prof. Meena Srinivasan',
             contact: '+91 87654 32109',
             mission: 'To advance technology for humanity by connecting students with IEEE global resources, professional development opportunities, and cutting-edge technical knowledge.',
-            vision: 'To be the most active and innovative IEEE student branch in South India, fostering a community of future tech leaders.',
+            about: 'To be the most active and innovative IEEE student branch in South India, fostering a community of future tech leaders.',
             joiningProcedure: 'Step 1: Register on ieee.org as a student member.\nStep 2: Contact the branch coordinator with your IEEE membership number.\nStep 3: Pay the annual branch fee.\nStep 4: Join our WhatsApp/Discord community for updates.',
             achievements: [
                 { image: null, caption: 'Best IEEE Student Branch Award 2023' },
@@ -1015,7 +1015,7 @@ function getSeedClubs() {
             clubHead: 'Smt. Lakshmi Priya',
             contact: '+91 76543 21098',
             mission: 'To preserve and promote Indian classical music traditions while embracing contemporary musical expressions, creating a vibrant musical community on campus.',
-            vision: 'To make Amrita a center of musical excellence where traditional and modern music forms coexist and inspire future generations of musicians.',
+            about: 'To make Amrita a center of musical excellence where traditional and modern music forms coexist and inspire future generations of musicians.',
             joiningProcedure: 'Step 1: Attend our weekly open mic sessions.\nStep 2: Audition with a piece of your choice (any genre).\nStep 3: Join our practice sessions and events.\nStep 4: Become a performing member after your first stage performance.',
             achievements: [
                 { image: null, caption: 'Winners at Inter-University Music Festival' },
@@ -1031,7 +1031,7 @@ function getSeedClubs() {
             clubHead: 'Prof. Ananya Krishnan',
             contact: '+91 65432 10987',
             mission: 'To cultivate artistic expression and design thinking among students through workshops, exhibitions, and collaborative art projects.',
-            vision: 'To transform the campus into a living gallery that celebrates creativity and empowers students to express themselves through visual arts.',
+            about: 'To transform the campus into a living gallery that celebrates creativity and empowers students to express themselves through visual arts.',
             joiningProcedure: 'Step 1: Visit our studio during open hours.\nStep 2: Submit a portfolio or attend a creative workshop.\nStep 3: Register as a member through the club portal.\nStep 4: Participate in your first collaborative project.',
             achievements: [
                 { image: null, caption: 'Campus Mural Project covering 500 sq ft' },
@@ -1047,7 +1047,7 @@ function getSeedClubs() {
             clubHead: 'Mr. Arun Kumar',
             contact: '+91 54321 09876',
             mission: 'To develop competitive programming skills and build a strong foundation in software development through regular contests, hackathons, and mentorship programs.',
-            vision: 'To produce world-class competitive programmers and software engineers who can solve complex problems with elegant code.',
+            about: 'To produce world-class competitive programmers and software engineers who can solve complex problems with elegant code.',
             joiningProcedure: 'Step 1: Solve the entrance challenge on our online judge.\nStep 2: Attend the weekly coding practice sessions.\nStep 3: Participate in at least one internal contest.\nStep 4: Join our mentorship program.',
             achievements: [
                 { image: null, caption: 'ICPC Regional Qualifiers - 5 teams' },
@@ -1063,7 +1063,7 @@ function getSeedClubs() {
             clubHead: 'Coach Vikram Singh',
             contact: '+91 43210 98765',
             mission: 'To promote physical fitness, sportsmanship, and competitive excellence among students through diverse sporting activities and professional coaching.',
-            vision: 'To develop well-rounded athletes who excel in both academics and sports, representing Amrita at national and international sporting events.',
+            about: 'To develop well-rounded athletes who excel in both academics and sports, representing Amrita at national and international sporting events.',
             joiningProcedure: 'Step 1: Choose your sport of interest from our offerings.\nStep 2: Attend trials conducted at the beginning of each semester.\nStep 3: Complete a fitness assessment.\nStep 4: Join the regular training schedule.',
             achievements: [
                 { image: null, caption: 'Inter-University Champions in Cricket' },
@@ -1079,7 +1079,7 @@ function getSeedClubs() {
             clubHead: 'Dr. Priya Nair',
             contact: '+91 32109 87654',
             mission: 'To celebrate India\'s diverse cultural heritage through dance, drama, festivals, and cultural exchange programs that unite students from all backgrounds.',
-            vision: 'To be a vibrant cultural platform that preserves traditions while encouraging creative cultural expressions among youth.',
+            about: 'To be a vibrant cultural platform that preserves traditions while encouraging creative cultural expressions among youth.',
             joiningProcedure: 'Step 1: Express interest at any of our cultural events.\nStep 2: Attend an orientation and choose your focus area (dance, drama, folk arts).\nStep 3: Participate in rehearsals and training sessions.\nStep 4: Perform at our monthly cultural showcase.',
             achievements: [
                 { image: null, caption: 'Best Cultural Program at National Fest' },
@@ -1095,7 +1095,7 @@ function getSeedClubs() {
             clubHead: 'Prof. Suresh Babu',
             contact: '+91 21098 76543',
             mission: 'To explore and advance the frontiers of artificial intelligence through research projects, paper reading groups, and collaborative experiments in machine learning and deep learning.',
-            vision: 'To establish Amrita as a hub for AI research and innovation, producing groundbreaking work that impacts society positively.',
+            about: 'To establish Amrita as a hub for AI research and innovation, producing groundbreaking work that impacts society positively.',
             joiningProcedure: 'Step 1: Complete the prerequisite online course on ML fundamentals.\nStep 2: Submit a brief research interest statement.\nStep 3: Join a research reading group.\nStep 4: Propose or join an ongoing project.',
             achievements: [
                 { image: null, caption: '10+ papers published in top AI conferences' },
@@ -1111,7 +1111,7 @@ function getSeedClubs() {
             clubHead: 'Ms. Divya Ramachandran',
             contact: '+91 10987 65432',
             mission: 'To train students in journalism, content creation, photography, and videography while documenting campus life and producing high-quality media content.',
-            vision: 'To create a professional media ecosystem on campus that nurtures future journalists, filmmakers, and content creators.',
+            about: 'To create a professional media ecosystem on campus that nurtures future journalists, filmmakers, and content creators.',
             joiningProcedure: 'Step 1: Submit a sample work (article, photo, or video).\nStep 2: Attend the media workshop series.\nStep 3: Get assigned to a content team (print, digital, or broadcast).\nStep 4: Complete your first assignment.',
             achievements: [
                 { image: null, caption: 'Campus Magazine with 5000+ readers' },
@@ -1127,7 +1127,7 @@ function getSeedClubs() {
             clubHead: 'Dr. Hari Krishnan',
             contact: '+91 98712 34567',
             mission: 'To instill the spirit of selfless service among students by organizing community outreach programs, environmental campaigns, and social welfare initiatives.',
-            vision: 'To build a generation of socially conscious leaders who actively contribute to the betterment of underprivileged communities.',
+            about: 'To build a generation of socially conscious leaders who actively contribute to the betterment of underprivileged communities.',
             joiningProcedure: 'Step 1: Attend our monthly community service event.\nStep 2: Sign up as a volunteer.\nStep 3: Complete 10 hours of community service.\nStep 4: Become a core member and lead initiatives.',
             achievements: [
                 { image: null, caption: 'Planted 10,000 trees in rural areas' },
@@ -1143,7 +1143,7 @@ function getSeedClubs() {
             clubHead: 'Mr. Karthik Subramanian',
             contact: '+91 87612 34567',
             mission: 'To bring together musicians of all genres and skill levels, fostering collaboration and providing a platform for original compositions and performances.',
-            vision: 'To create a thriving contemporary music scene on campus where students can discover, create, and share music freely.',
+            about: 'To create a thriving contemporary music scene on campus where students can discover, create, and share music freely.',
             joiningProcedure: 'Step 1: Show up to our jam sessions every Friday.\nStep 2: Play or sing at open mic night.\nStep 3: Register as a member.\nStep 4: Join a band or start your own!',
             achievements: [
                 { image: null, caption: 'Battle of the Bands champions' },
@@ -1159,7 +1159,7 @@ function getSeedClubs() {
             clubHead: 'Ms. Sneha Rajan',
             contact: '+91 76512 34567',
             mission: 'To explore digital arts, graphic design, and multimedia creation, equipping students with industry-standard creative tools and techniques.',
-            vision: 'To bridge the gap between traditional artistry and modern digital creativity, producing designers who can lead in the creative industry.',
+            about: 'To bridge the gap between traditional artistry and modern digital creativity, producing designers who can lead in the creative industry.',
             joiningProcedure: 'Step 1: Attend our design bootcamp.\nStep 2: Complete a mini design challenge.\nStep 3: Join our Adobe/Figma workspace.\nStep 4: Collaborate on a real project.',
             achievements: [
                 { image: null, caption: 'Designed branding for 20+ campus events' },
@@ -1175,7 +1175,7 @@ function getSeedClubs() {
             clubHead: 'Dr. Venkatesh Iyer',
             contact: '+91 65412 34567',
             mission: 'To nurture scientific curiosity and research aptitude among undergraduate students through experiments, seminars, and collaborative research projects.',
-            vision: 'To create a culture of scientific inquiry where every student has the opportunity to contribute to meaningful research.',
+            about: 'To create a culture of scientific inquiry where every student has the opportunity to contribute to meaningful research.',
             joiningProcedure: 'Step 1: Attend our monthly science seminar.\nStep 2: Express interest in a research area.\nStep 3: Get paired with a faculty mentor.\nStep 4: Begin your research project.',
             achievements: [
                 { image: null, caption: '25+ papers in peer-reviewed journals' },
@@ -1191,7 +1191,7 @@ function getSeedClubs() {
             clubHead: 'Prof. Kavitha Menon',
             contact: '+91 54312 34567',
             mission: 'To cultivate the art of eloquent expression through debates, creative writing, poetry slams, and literary discussions that sharpen critical thinking.',
-            vision: 'To produce confident communicators and thoughtful writers who can articulate ideas powerfully in any arena.',
+            about: 'To produce confident communicators and thoughtful writers who can articulate ideas powerfully in any arena.',
             joiningProcedure: 'Step 1: Attend a debate or writing workshop.\nStep 2: Submit a writing sample or participate in a debate.\nStep 3: Join our weekly literary circle.\nStep 4: Represent the club at inter-college events.',
             achievements: [
                 { image: null, caption: 'Won 12 inter-university debate trophies' },
@@ -1207,7 +1207,7 @@ function getSeedClubs() {
             clubHead: 'Mr. Ashwin Menon',
             contact: '+91 43212 34567',
             mission: 'To foster an entrepreneurial mindset among students by providing mentorship, funding connections, and hands-on startup experience through incubation programs.',
-            vision: 'To make Amrita a launchpad for successful student startups that create jobs and solve real-world problems.',
+            about: 'To make Amrita a launchpad for successful student startups that create jobs and solve real-world problems.',
             joiningProcedure: 'Step 1: Attend our startup bootcamp.\nStep 2: Pitch a business idea (solo or team).\nStep 3: Get matched with a mentor.\nStep 4: Join the incubation program.',
             achievements: [
                 { image: null, caption: '5 student startups received funding' },

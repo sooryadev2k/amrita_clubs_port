@@ -1034,7 +1034,7 @@ h1, h2, h3, h4, h5, h6 {
   border-left: 4px solid var(--maroon);
 }
 
-.detail-card.vision {
+.detail-card.about {
   border-left: 4px solid var(--gold);
 }
 
@@ -1060,7 +1060,7 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--maroon);
 }
 
-.detail-card.vision .detail-card-header .icon {
+.detail-card.about .detail-card-header .icon {
   background: rgba(212, 168, 67, 0.1);
   color: var(--gold-dark);
 }
